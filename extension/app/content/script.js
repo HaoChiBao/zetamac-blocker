@@ -1,7 +1,7 @@
 // Default Settings
 const DEFAULT_SETTINGS = {
-    targetScore: 10,
-    ops: ['+', '-', '*'],
+    targetScore: 5,
+    ops: ['+', '-', '*', '/'],
     addRange: { min1: 2, max1: 100, min2: 2, max2: 100 },
     mulRange: { min1: 2, max1: 12, min2: 2, max2: 100 },
     cooldownMinutes: 5
@@ -23,6 +23,12 @@ const STYLES = `
     align-items: center;
     font-family: 'Inter', sans-serif;
     color: #000000;
+    transition: opacity 0.4s ease;
+}
+
+.fade-out {
+    opacity: 0;
+    pointer-events: none;
 }
 
 #zetamac-game-container {
@@ -208,7 +214,7 @@ function checkStatus() {
             const now = Date.now();
 
             if (now - lastCompletion > cooldownMs) {
-                console.log(`Zetamac Blocker: Cooldown period has passed. Initializing game.`);
+                console.log(`lowkey smarter: Cooldown period has passed. Initializing game.`);
                 initGame(settings);
             }
         }
@@ -239,7 +245,7 @@ function initGame(settings) {
     // Initial Game HTML
     overlay.innerHTML = `
         <div id="zetamac-game-container">
-            <div id="zetamac-title">Zetamac Blocker</div>
+            <div id="zetamac-title">lowkey smarter</div>
             <div id="zetamac-problem"></div>
             <input type="number" id="zetamac-input" autofocus autocomplete="off" placeholder="?">
             <div id="zetamac-score">0 / ${settings.targetScore}</div>
@@ -389,8 +395,17 @@ function initGame(settings) {
 
     function completeGame() {
         chrome.storage.local.set({ lastCompletion: Date.now() }, () => {
-            host.remove();
-            document.body.style.overflow = '';
+            const overlay = shadow.getElementById('zetamac-overlay');
+            if (overlay) {
+                overlay.classList.add('fade-out');
+                setTimeout(() => {
+                    host.remove();
+                    document.body.style.overflow = '';
+                }, 400); // Wait for animation
+            } else {
+                host.remove();
+                document.body.style.overflow = '';
+            }
         });
     }
 }

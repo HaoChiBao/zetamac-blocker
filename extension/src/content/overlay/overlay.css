@@ -1,0 +1,36 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+
+#gate-overlay-root {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: #ffffff;
+    z-index: 2147483647;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: 'Inter', sans-serif;
+    color: #000000;
+    opacity: 1;
+    transition: opacity 0.4s ease;
+}
+
+#gate-overlay-root.fade-out {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.gate-container {
+    text-align: center;
+    padding: 60px;
+    background: white;
+    max-width: 600px;
+    width: 90%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    /* box-shadow: 0 10px 30px rgba(0,0,0,0.1); */
+    /* border-radius: 12px; */
+}

@@ -1,4 +1,7 @@
-document.addEventListener('DOMContentLoaded', () => {
+import { Storage } from '../../src/common/storage.js';
+import { Registry } from '../../src/content/games/registry.js';
+
+document.addEventListener('DOMContentLoaded', async () => {
     // UI Elements
     const mainView = document.getElementById('mainView');
     const settingsView = document.getElementById('settingsView');
@@ -40,13 +43,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const mulMax2 = document.getElementById('mulMax2');
     
     const cooldownMinutes = document.getElementById('cooldownMinutes');
+    const gamesToggleList = document.getElementById('gamesToggleList');
 
     let countdownInterval;
 
     // Default Settings
     const defaultSettings = {
-        targetScore: 10,
-        ops: ['+', '-', '*'],
+        targetScore: 5,
+        ops: ['+', '-', '*', '/'],
         addRange: { min1: 2, max1: 100, min2: 2, max2: 100 },
         mulRange: { min1: 2, max1: 12, min2: 2, max2: 100 },
         cooldownMinutes: 5
@@ -156,13 +160,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Settings Logic
     function loadSettings() {
-        chrome.storage.local.get(['gameSettings'], (result) => {
+        chrome.storage.local.get(['gameSettings'], async (result) => {
             const settings = result.gameSettings || defaultSettings;
-            applySettingsToUI(settings);
+            await applySettingsToUI(settings);
         });
     }
 
-    function applySettingsToUI(settings) {
+    async function applySettingsToUI(settings) {
         targetScoreInput.value = settings.targetScore;
         opAdd.checked = settings.ops.includes('+');
         opSub.checked = settings.ops.includes('-');
@@ -183,6 +187,75 @@ document.addEventListener('DOMContentLoaded', () => {
         mulMax2.value = mr.max2;
         
         cooldownMinutes.value = settings.cooldownMinutes || 5;
+
+        // --- NEW: Render Game Toggles ---
+        // We need to fetch from the NEW storage system for enabled games
+        const modularSettings = await Storage.getSettings();
+        const configs = Registry.getAllConfigs();
+        
+        gamesToggleList.innerHTML = '';
+        configs.forEach(config => {
+            const isEnabled = modularSettings.enabledGames[config.id] !== false; // Default true if undefined, or strictly check
+            
+            const div = document.createElement('div');
+            div.style.display = 'flex';
+            div.style.alignItems = 'center';
+            div.style.justifyContent = 'space-between';
+            div.style.padding = '8px';
+            div.style.background = '#f5f5f5';
+            div.style.borderRadius = '6px';
+
+            div.innerHTML = `
+                <span style="font-weight: 600; font-size: 14px;">${config.name}</span>
+                <label class="switch" style="position: relative; display: inline-block; width: 40px; height: 20px;">
+                    <input type="checkbox" data-id="${config.id}" ${isEnabled ? 'checked' : ''} style="opacity: 0; width: 0; height: 0;">
+                    <span class="slider" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px;"></span>
+                </label>
+            `;
+
+            // Add basic CSS for the slider inside the element logic or valid global CSS
+            // For simplicity, we assume we might need to inject the style or add inline styles for the "checked" state manually in JS if CSS isn't there.
+            // But let's add a style block for the switch if not present.
+            
+            const checkbox = div.querySelector('input');
+            const slider = div.querySelector('.slider');
+            
+            // Initial color
+            if (checkbox.checked) slider.style.backgroundColor = '#2196F3';
+            if (checkbox.checked) {
+                 // slider:before logic is hard with inline styles. 
+                 // Let's just rely on a helper or event.
+            }
+
+            checkbox.addEventListener('change', async (e) => {
+                const checked = e.target.checked;
+                slider.style.backgroundColor = checked ? '#2196F3' : '#ccc';
+                
+                // Save immediately
+                const current = await Storage.getSettings();
+                current.enabledGames[config.id] = checked;
+                await Storage.saveSettings(current);
+            });
+
+            // Slider knob style (pseudo-element simulation)
+            const knob = document.createElement('span');
+            knob.style.position = 'absolute';
+            knob.style.content = '""';
+            knob.style.height = '14px';
+            knob.style.width = '14px';
+            knob.style.left = isEnabled ? '22px' : '3px';
+            knob.style.bottom = '3px';
+            knob.style.backgroundColor = 'white';
+            knob.style.transition = '.4s';
+            knob.style.borderRadius = '50%';
+            slider.appendChild(knob);
+
+            checkbox.addEventListener('change', (e) => {
+                knob.style.left = e.target.checked ? '22px' : '3px';
+            });
+
+            gamesToggleList.appendChild(div);
+        });
     }
 
     function saveSettings() {
