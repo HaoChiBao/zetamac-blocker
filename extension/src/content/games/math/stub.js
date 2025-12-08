@@ -267,14 +267,18 @@ export class MathGame extends Game {
             this.scoreDisplay.textContent = `${this.score} / ${this.metrics.requiredCorrect}`;
             
             if (this.score >= this.metrics.requiredCorrect) {
-                this.showStats(context);
+            if (this.score >= this.metrics.requiredCorrect) {
+                 this.finishGame(context);
+            } else {
+                this.generateProblem();
+            }
             } else {
                 this.generateProblem();
             }
         }
     }
 
-    showStats(context) {
+    finishGame(context) {
         const totalTime = this.questionTimes.reduce((a, b) => a + b, 0);
         const avgTime = Math.round(totalTime / this.questionTimes.length);
         const totalSeconds = (totalTime / 1000).toFixed(1);
@@ -295,9 +299,17 @@ export class MathGame extends Game {
             
             // Calculate best
             const bestAvg = history.reduce((min, r) => Math.min(min, r.avgTime), Infinity);
-            const bestAvgSeconds = (bestAvg !== Infinity) ? (bestAvg / 1000).toFixed(1) : avgSeconds;
+            const bestAvgSeconds = (bestAvg !== Infinity) ? (bestAvg / 1000).toFixed(1) + 's' : avgSeconds + 's';
 
-            this.renderStatsView(context, totalSeconds, avgSeconds, bestAvgSeconds);
+            // Pass stats to global completion handler
+            context.onComplete({
+                passed: true,
+                meta: {
+                    totalTime: totalSeconds + 's',
+                    avgTime: avgSeconds + 's',
+                    bestAvg: bestAvgSeconds
+                }
+            });
         });
     }
 

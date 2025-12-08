@@ -2,18 +2,45 @@ import { Difficulty } from './types.js';
 
 /** @type {import('./types').UserSettings} */
 const DEFAULT_SETTINGS = {
-    blockedDomains: [],
+    difficulty: 'medium', // Legacy support
+    cooldownMinutes: 5,
+    blockedDomains: [
+        "twitter.com",
+        "facebook.com",
+        "instagram.com",
+        "tiktok.com",
+        "reddit.com",
+        "youtube.com",
+        "linkedin.com"
+    ],
     enabledGames: {
-        'math': false,
+        'math': true,
         'blackjack': false,
         'wordhunt': false,
         'pairs': true,
-        'cupshuffle': false
+        'cupshuffle': true
     },
-    difficulty: Difficulty.MEDIUM
+    // Detailed Game Settings
+    math: {
+        targetScore: 5,
+        ops: ['+', '-', '*', '/'],
+        addRange: { min1: 2, max1: 100, min2: 2, max2: 100 },
+        mulRange: { min1: 2, max1: 12, min2: 2, max2: 100 }
+    },
+    pairs: {
+        pairsToClear: 4
+    },
+    cupshuffle: {
+        cupsCount: 3,
+        shuffleSpeed: 1.0,
+        shuffleRounds: 5
+    }
 };
 
 export const Storage = {
+    // Expose defaults for reference if needed
+    defaultSettings: DEFAULT_SETTINGS,
+
     /**
      * Get user settings with full defaults applied.
      * @returns {Promise<import('./types').UserSettings>}
@@ -23,22 +50,44 @@ export const Storage = {
             // Read game preferences from SYNC
             chrome.storage.sync.get(['settings'], (syncResult) => {
                 // Read blocklist and legacy settings from LOCAL
-                chrome.storage.local.get(['blockedSites', 'gameSettings'], (localResult) => {
+                chrome.storage.local.get(['blockedSites', 'gameSettings', 'enabledGames'], (localResult) => {
                     const loadedSync = syncResult.settings || {};
+                    const storedGameSettings = localResult.gameSettings || {};
+                    const storedEnabledGames = localResult.enabledGames || {};
                     const blockedSites = localResult.blockedSites || [];
                     
-                    // Merge with defaults
+                    // DEEP MERGE STRATEGY
                     const settings = {
                         ...DEFAULT_SETTINGS,
-                        ...loadedSync,
-                        blockedDomains: blockedSites, // Use LOCAL blocked sites
+                        ...loadedSync, // Sync overrides defaults (legacy)
+                        
+                        // Local Overrides
+                        blockedDomains: blockedSites.length > 0 ? blockedSites : DEFAULT_SETTINGS.blockedDomains,
+                        
+                        // Merge Enabled Games
                         enabledGames: {
                             ...DEFAULT_SETTINGS.enabledGames,
-                            ...(loadedSync.enabledGames || {})
+                            ...storedEnabledGames
                         },
-                        // We could also map legacy gameSettings here if we wanted custom diff/targetScore
-                        // For now, ensuring blocked sites work is priority.
+
+                        // Merge Game Specific Settings
+                        math: {
+                            ...DEFAULT_SETTINGS.math,
+                            ...(storedGameSettings.math || {})
+                        },
+                        pairs: {
+                            ...DEFAULT_SETTINGS.pairs,
+                            ...(storedGameSettings.pairs || {})
+                        },
+                        cupshuffle: {
+                            ...DEFAULT_SETTINGS.cupshuffle,
+                            ...(storedGameSettings.cupshuffle || {})
+                        },
+                        
+                        // General override
+                        cooldownMinutes: storedGameSettings.cooldownMinutes || DEFAULT_SETTINGS.cooldownMinutes
                     };
+
                     resolve(settings);
                 });
             });
@@ -52,7 +101,14 @@ export const Storage = {
      */
     saveSettings: async (settings) => {
         return new Promise((resolve) => {
-            chrome.storage.sync.set({ settings }, () => {
+            // Split settings into their respective storage keys to match getSettings logic
+            const { enabledGames, blockedDomains, ...gameSettings } = settings;
+            
+            chrome.storage.local.set({ 
+                gameSettings: gameSettings,
+                enabledGames: enabledGames,
+                blockedSites: blockedDomains
+            }, () => {
                 resolve();
             });
         });

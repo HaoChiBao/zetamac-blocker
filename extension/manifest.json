@@ -12,7 +12,7 @@
     "<all_urls>"
   ],
   "action": {
-    "default_popup": "app/popup/index.html",
+    "default_popup": "src/popup/index.html",
     "default_icon": {
       "16": "images/icon16.png",
       "48": "images/icon48.png",
@@ -32,7 +32,8 @@
       "resources": [
         "src/**/*.js",
         "src/**/*.css",
-        "src/**/*.html"
+        "src/**/*.html",
+        "images/*.png"
       ],
       "matches": ["<all_urls>"]
     }

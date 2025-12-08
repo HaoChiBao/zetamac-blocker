@@ -5,7 +5,7 @@ export const CONSTANTS = {
     GRID_COLS: 4,
     TOTAL_CARDS: 8,
     UNIQUE_LETTERS_COUNT: 4,
-    LETTER_SET: ["A", "B", "C", "D"],
+    LETTER_SET: ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"],
     COMPLETION_RULE: "match_all_pairs"
 };
 

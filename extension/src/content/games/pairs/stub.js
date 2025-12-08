@@ -26,6 +26,7 @@ const STYLES = `
     margin-bottom: 30px;
     width: 100%;
     max-width: 400px;
+    justify-content: center;
 }
 
 .card {
@@ -49,6 +50,12 @@ const STYLES = `
     color: #000;
     border: 2px solid #000;
     transform: rotateY(180deg);
+}
+
+/* Un-mirror the text content when the card is flipped */
+.card-content {
+    transform: rotateY(180deg);
+    display: inline-block;
 }
 
 .card.matched {
@@ -93,6 +100,9 @@ export class PairsGame extends Game {
         this.isLocked = false;
         this.matchedPairs = 0;
         this.moves = 0;
+        this.mistakes = 0;
+        this.startTime = 0;
+        this.isPreviewing = false;
     }
 
     render(container, context) {
@@ -105,12 +115,14 @@ export class PairsGame extends Game {
         styleEl.textContent = STYLES;
         container.appendChild(styleEl);
 
+        const pairsCount = this.metrics.pairsToClear || 4;
+        
         // Build UI structure
         const gameDiv = document.createElement('div');
         gameDiv.className = 'pairs-game-container';
         gameDiv.innerHTML = `
             <div class="pairs-title">${this.config.name}</div>
-            <div class="pairs-status">Pairs matched: 0 / ${CONSTANTS.UNIQUE_LETTERS_COUNT}</div>
+            <div class="pairs-status">Pairs matched: 0 / ${pairsCount}</div>
             <div class="pairs-grid"></div>
             <button class="pairs-reset-btn">Reset Board</button>
         `;
@@ -132,13 +144,17 @@ export class PairsGame extends Game {
         this.isLocked = false;
         this.matchedPairs = 0;
         this.moves = 0;
+        this.mistakes = 0;
+        this.startTime = Date.now();
+        this.isPreviewing = true; // Start in preview mode
         this.updateStatus();
 
         // Generate Board Logic
         // Create pairs: A, A, B, B, etc.
+        const pairsCount = this.metrics.pairsToClear || 4;
         const letters = [];
-        for (let i = 0; i < CONSTANTS.UNIQUE_LETTERS_COUNT; i++) {
-            const char = CONSTANTS.LETTER_SET[i];
+        for (let i = 0; i < pairsCount; i++) {
+            const char = CONSTANTS.LETTER_SET[i % CONSTANTS.LETTER_SET.length];
             letters.push(char, char);
         }
         
@@ -156,6 +172,26 @@ export class PairsGame extends Game {
         }));
 
         this.renderBoard();
+        this.startPreview();
+    }
+
+    startPreview() {
+        // Show all cards face up visually (logic state remains isFlipped: false for game purposes)
+        this.cards.forEach((el, index) => {
+            el.classList.add('face-up');
+            el.innerHTML = `<span class="card-content">${this.board[index].value}</span>`;
+        });
+
+        // After delay, flip back
+        setTimeout(() => {
+            if (!this.container) return; // Guard if destroyed
+            this.cards.forEach(el => {
+                el.classList.remove('face-up');
+                el.textContent = '';
+            });
+            this.isPreviewing = false;
+            this.startTime = Date.now(); // Reset start time so preview doesn't count
+        }, 2000);
     }
 
     renderBoard() {
@@ -176,7 +212,7 @@ export class PairsGame extends Game {
     }
 
     handleCardClick(index) {
-        if (this.isLocked) return;
+        if (this.isLocked || this.isPreviewing) return;
         
         const card = this.board[index];
         // Prevent clicking already flipped or matched cards
@@ -192,7 +228,9 @@ export class PairsGame extends Game {
             // Second card
             this.secondSelectedIndex = index;
             this.moves++;
-            this.checkForMatch();
+            // Wait for flip animation interaction before checking match logic visuals
+            // OR check immediately but delay the "matched" state
+            this.checkForMatch(); 
         }
     }
 
@@ -203,7 +241,8 @@ export class PairsGame extends Game {
         card.isFlipped = isFaceUp;
         if (isFaceUp) {
             el.classList.add('face-up');
-            el.textContent = card.value;
+            // Wrap text in a span that un-mirrors it
+            el.innerHTML = `<span class="card-content">${card.value}</span>`;
         } else {
             el.classList.remove('face-up');
             el.textContent = '';
@@ -211,33 +250,47 @@ export class PairsGame extends Game {
     }
 
     checkForMatch() {
+        // Lock immediately to prevent 3rd card click
+        this.isLocked = true;
+
         const first = this.board[this.firstSelectedIndex];
         const second = this.board[this.secondSelectedIndex];
 
         if (first.value === second.value) {
-            // Match!
-            first.isMatched = true;
-            second.isMatched = true;
-            this.cards[this.firstSelectedIndex].classList.add('matched');
-            this.cards[this.secondSelectedIndex].classList.add('matched');
-            
-            this.matchedPairs++;
-            this.updateStatus();
-            
-            this.firstSelectedIndex = null;
-            this.secondSelectedIndex = null;
+            // Match found!
+            // Wait for the flip animation (300ms) plus a beat (200ms) = 500ms
+            setTimeout(() => {
+                first.isMatched = true;
+                second.isMatched = true;
+                this.cards[this.firstSelectedIndex].classList.add('matched');
+                this.cards[this.secondSelectedIndex].classList.add('matched');
+                
+                this.matchedPairs++;
+                this.updateStatus();
+                
+                this.firstSelectedIndex = null;
+                this.secondSelectedIndex = null;
+                this.isLocked = false;
 
-            if (this.matchedPairs === CONSTANTS.UNIQUE_LETTERS_COUNT) {
+                if (this.matchedPairs === this.metrics.pairsToClear) {
+                const endTime = Date.now();
+                const totalTime = ((endTime - this.startTime) / 1000).toFixed(1) + 's';
+                
                 setTimeout(() => {
                     this.context.onComplete({ 
                         passed: true, 
-                        meta: { moves: this.moves, matchedPairs: this.matchedPairs } 
+                        meta: { 
+                            totalTime: totalTime,
+                            mistakes: this.mistakes,
+                            totalMoves: this.moves 
+                        } 
                     });
-                }, 500); // Short delay to see the last match
+                }, 500); 
             }
+        }, 600); // Allow flip to finish
         } else {
             // No Match
-            this.isLocked = true;
+            this.mistakes++;
             setTimeout(() => {
                 this.flipCard(this.firstSelectedIndex, false);
                 this.flipCard(this.secondSelectedIndex, false);
@@ -249,7 +302,8 @@ export class PairsGame extends Game {
     }
 
     updateStatus() {
-        this.statusEl.textContent = `Pairs matched: ${this.matchedPairs} / ${CONSTANTS.UNIQUE_LETTERS_COUNT}`;
+        const target = this.metrics.pairsToClear || 4;
+        this.statusEl.textContent = `Pairs matched: ${this.matchedPairs} / ${target}`;
     }
 
     destroy() {

@@ -4,7 +4,7 @@ import { pickRandom } from '../../common/random.js';
 import { SessionManager } from './sessionManager.js';
 
 export const GateController = {
-    init: async () => {
+    init: async (excludeGameId = null) => {
         console.log('[GateController] Init started');
         const settings = await Storage.getSettings();
         console.log('[GateController] Settings loaded:', settings);
@@ -12,27 +12,31 @@ export const GateController = {
         
         // Simple allowlist check
         const blocked = settings.blockedDomains.some(site => currentHost === site || currentHost.endsWith('.' + site));
-        console.log(`[GateController] checking host: ${currentHost}, blocked? ${blocked}`);
+        const isGlobalSessionActive = await SessionManager.isSessionActive();
+        console.log(`[GateController] checking host: ${currentHost}, blocked? ${blocked}, sessionActive? ${isGlobalSessionActive}`);
+        
         if (!blocked) return null;
 
-        if (SessionManager.isAllowed(currentHost)) {
-            console.log('[GateController] Host allowed in session (IGNORING FOR DEBUGGING - Game should show)');
-            // return null; // DEBUG: forcing game to show
+        if (isGlobalSessionActive) {
+            console.log('[GateController] Global session active. Allowing access.');
+            return null; 
         }
 
         // Select Game
-        let gameId = SessionManager.getSessionGame(currentHost);
-        console.log('[GateController] Session stored gameId:', gameId);
-
-        // Check if stored game is still enabled
-        if (gameId && settings.enabledGames[gameId] === false) {
-             console.log(`[GateController] Stored game ${gameId} is now disabled. Re-rolling.`);
-             gameId = null;
-        }
-
+        let gameId = null; 
+        
         if (!gameId) {
-            const enabledConfigs = Registry.getEnabledGames(settings.enabledGames);
+            let enabledConfigs = Registry.getEnabledGames(settings.enabledGames);
             console.log('[GateController] Enabled games:', enabledConfigs.map(c => c.id));
+            
+            // If switching, try to filter out the current one
+            if (excludeGameId && enabledConfigs.length > 1) {
+                const filtered = enabledConfigs.filter(c => c.id !== excludeGameId);
+                if (filtered.length > 0) {
+                    enabledConfigs = filtered;
+                }
+            }
+
             if (enabledConfigs.length === 0) {
                 // Fallback to math
                 console.log('[GateController] No games enabled, falling back to math');
@@ -51,9 +55,21 @@ export const GateController = {
             return null;
         }
 
-        // Determine metrics based on difficulty
-        const diff = settings.difficulty;
-        const metrics = gameEntry.config.difficultyPresets[diff] || gameEntry.config.difficultyPresets['medium'];
+        // Determine metrics
+        // 1. Start with defaults or presets
+        const diff = settings.difficulty || 'medium';
+        let metrics = gameEntry.config.difficultyPresets[diff] || gameEntry.config.difficultyPresets['medium'];
+        
+        console.log('[GateController] Base metrics from preset:', metrics);
+        console.log('[GateController] Full Settings:', settings);
+        
+        // 2. Merge user-configured overrides if any
+        if (settings[gameId]) {
+            console.log(`[GateController] Merging custom settings for ${gameId}:`, settings[gameId]);
+            metrics = { ...metrics, ...settings[gameId] };
+        } else {
+            console.log(`[GateController] No custom settings found for key: ${gameId}`);
+        }
         
         console.log('[GateController] Returning game controller:', { id: gameId, metrics });
 
@@ -66,8 +82,8 @@ export const GateController = {
 
     onComplete: (success) => {
         if (success) {
-            const currentHost = window.location.hostname.replace(/^www\./, '');
-            SessionManager.allowHost(currentHost);
+            console.log('[GateController] Game passed. Extending global session.');
+            SessionManager.extendSession();
         }
     }
 };

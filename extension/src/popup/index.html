@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
+    <!-- MAIN VIEW: Home -->
     <div id="mainView">
       <div class="header-row">
         <h1>lowkey smarter</h1>
@@ -63,24 +64,45 @@
       </button>
     </div>
 
+    <!-- SETTINGS VIEW: Global Settings + Game List -->
     <div id="settingsView" style="display: none">
       <div class="header-row">
-        <button id="backBtn" class="icon-btn">←</button>
+        <button id="settingsBackBtn" class="icon-btn">←</button>
         <h1>Settings</h1>
       </div>
 
       <div class="general-settings">
-        <div class="setting-item">
-          <label>Target Score</label>
-          <input type="number" id="targetScore" value="10" />
-        </div>
+        <!-- Only Cooldown here per request -->
         <div class="setting-item">
           <label>Cooldown (min)</label>
           <input type="number" id="cooldownMinutes" value="5" />
         </div>
       </div>
 
+      <div class="setting-group">
+        <label>Playable Games</label>
+        <div
+          id="gamesList"
+          style="margin-top: 10px; display: flex; flex-direction: column; gap: 8px;"
+        >
+          <!-- Games injected here dynamically -->
+        </div>
+      </div>
+    </div>
+
+    <!-- MATH SETTINGS VIEW -->
+    <div id="mathSettingsView" style="display: none">
+      <div class="header-row">
+        <button id="mathBackBtn" class="icon-btn">←</button>
+        <h1>Math Settings</h1>
+      </div>
+      
       <div class="settings-section">
+        <div class="setting-item">
+           <label>Target Score</label>
+           <input type="number" id="targetScore" value="10" />
+        </div>
+
         <!-- Addition -->
         <div class="settings-row">
           <label class="checkbox-label">
@@ -90,23 +112,11 @@
             <div class="range-group">
               <span>Range:</span>
               <div class="range-line">
-                (
-                <div class="range-inputs">
-                  <input type="number" id="addMin1" value="2" />
-                  to
-                  <input type="number" id="addMax1" value="100" />
-                </div>
-                )
+                (<input type="number" id="addMin1" value="2" /> to <input type="number" id="addMax1" value="100" />)
               </div>
               <div class="range-operator">+</div>
               <div class="range-line">
-                (
-                <div class="range-inputs">
-                  <input type="number" id="addMin2" value="2" />
-                  to
-                  <input type="number" id="addMax2" value="100" />
-                </div>
-                )
+                (<input type="number" id="addMin2" value="2" /> to <input type="number" id="addMax2" value="100" />)
               </div>
             </div>
           </div>
@@ -117,9 +127,6 @@
           <label class="checkbox-label">
             <input type="checkbox" id="opSub" checked /> Subtraction
           </label>
-          <div class="setting-details">
-            <div class="description">Addition problems in reverse.</div>
-          </div>
         </div>
 
         <!-- Multiplication -->
@@ -131,23 +138,11 @@
             <div class="range-group">
               <span>Range:</span>
               <div class="range-line">
-                (
-                <div class="range-inputs">
-                  <input type="number" id="mulMin1" value="2" />
-                  to
-                  <input type="number" id="mulMax1" value="12" />
-                </div>
-                )
+                (<input type="number" id="mulMin1" value="2" /> to <input type="number" id="mulMax1" value="12" />)
               </div>
               <div class="range-operator">×</div>
               <div class="range-line">
-                (
-                <div class="range-inputs">
-                  <input type="number" id="mulMin2" value="2" />
-                  to
-                  <input type="number" id="mulMax2" value="100" />
-                </div>
-                )
+                (<input type="number" id="mulMin2" value="2" /> to <input type="number" id="mulMax2" value="100" />)
               </div>
             </div>
           </div>
@@ -160,21 +155,54 @@
           </label>
         </div>
       </div>
+    </div>
 
-      <div class="setting-group">
-        <label>Game Selection</label>
-        <div
-          id="gamesToggleList"
-          style="margin-top: 10px; display: flex; flex-direction: column; gap: 8px;"
-        >
-          <!-- Games injected here -->
-        </div>
+    <!-- PAIRS SETTINGS VIEW -->
+    <div id="pairsSettingsView" style="display: none">
+      <div class="header-row">
+        <button id="pairsBackBtn" class="icon-btn">←</button>
+        <h1>Pairs Settings</h1>
       </div>
-      <div class="actions">
-        <!-- Inputs save automatically, back button just navigation -->
+      
+      <div class="settings-section">
+        <div class="setting-item">
+           <label>Difficulty (Pairs)</label>
+           <select id="pairsDifficulty" style="padding: 8px; width: 100%;">
+             <option value="4">Easy (4 pairs)</option>
+             <option value="6">Medium (6 pairs)</option>
+             <option value="8">Hard (8 pairs)</option>
+             <option value="10">Expert (10 pairs)</option>
+           </select>
+        </div>
       </div>
     </div>
 
+    <!-- CUP SHUFFLE SETTINGS VIEW -->
+    <div id="cupShuffleSettingsView" style="display: none">
+      <div class="header-row">
+        <button id="cupShuffleBackBtn" class="icon-btn">←</button>
+        <h1>Cup Shuffle</h1>
+      </div>
+      
+      <div class="settings-section">
+        <div class="setting-item">
+           <label>Number of Cups: <span id="cupsCountVal">3</span></label>
+           <input type="range" id="cupsCount" min="3" max="6" value="3" />
+        </div>
+
+        <div class="setting-item">
+           <label>Shuffle Speed: <span id="shuffleSpeedVal">1.0</span>x</label>
+           <input type="range" id="shuffleSpeed" min="0.5" max="5.0" step="0.1" value="1.0" />
+        </div>
+
+        <div class="setting-item">
+           <label>Shuffle Rounds: <span id="shuffleRoundsVal">5</span></label>
+           <input type="range" id="shuffleRounds" min="2" max="20" value="5" />
+        </div>
+      </div>
+    </div>
+
+    <!-- HISTORY VIEW -->
     <div id="historyView" style="display: none">
       <div class="header-row">
         <button id="historyBackBtn" class="icon-btn">←</button>
@@ -184,6 +212,7 @@
         <!-- History items will be injected here -->
       </div>
     </div>
+    
     <script type="module" src="script.js"></script>
   </body>
 </html>

@@ -1,0 +1,4 @@
+export const CONSTANTS = {
+    SESSION_DURATION_MINUTES: 5,
+    SESSION_DURATION_MS: 5 * 60 * 1000
+};
