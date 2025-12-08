@@ -1,0 +1,19 @@
+.carousel-container {
+  width: 100%;
+  overflow-x: auto;
+  padding: 20px 0;
+  /* Hide scrollbar for cleaner look, but keep functionality */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none;  /* IE and Edge */
+}
+
+.carousel-container::-webkit-scrollbar {
+  display: none;
+}
+
+.carousel-track {
+  display: flex;
+  gap: 20px;
+  padding: 0 20px; /* Add padding to sides so first/last cards aren't flush with edge */
+  width: max-content; /* Ensure track is wide enough for all items */
+}

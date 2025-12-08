@@ -1,0 +1,20 @@
+Set 1: W O R D S
+Words:
+5 letters: words, sword
+4 letters: word, rods, rows
+3 letters: row, rod, sod, sow, dos
+2 letters: do, so, or
+
+Set 2: S M A R T
+Words:
+5 letters: smart, marts, trams
+4 letters: mart, tram, star, arts, rats, tars, rams, arms, mars, mats, mast
+3 letters: art, arm, ram, mat, sat, tar, rat, mar
+2 letters: am, at, as, ma
+
+Set 3: P L A T E
+Words:
+5 letters: plate, pleat, petal, leapt
+4 letters: late, tale, tape, pate, peat, plea, pale, leap, pelt
+3 letters: ate, tea, pat, tap, lap, pal, let, pet, apt, pea, eat, ale, alp
+2 letters: at, pa
