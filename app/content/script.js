@@ -7,21 +7,192 @@ const DEFAULT_SETTINGS = {
     cooldownMinutes: 5
 };
 
+const STYLES = `
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+
+#zetamac-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: #ffffff;
+    z-index: 2147483647;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: 'Inter', sans-serif;
+    color: #000000;
+}
+
+#zetamac-game-container {
+    text-align: center;
+    padding: 60px;
+    background: white;
+    max-width: 600px;
+    width: 90%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#zetamac-title {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 40px;
+    color: #000000;
+    letter-spacing: -0.5px;
+    text-transform: uppercase;
+}
+
+#zetamac-problem {
+    font-size: 80px;
+    font-weight: 700;
+    margin: 30px 0;
+    color: #000000;
+    line-height: 1;
+}
+
+#zetamac-input {
+    font-family: 'Inter', sans-serif;
+    font-size: 40px;
+    padding: 15px;
+    width: 200px;
+    text-align: center;
+    border: none;
+    border-bottom: 4px solid #000000;
+    background: transparent;
+    outline: none;
+    color: #000000;
+    font-weight: 600;
+    margin-bottom: 20px;
+}
+
+#zetamac-input::placeholder {
+    color: #ccc;
+}
+
+#zetamac-score {
+    margin-top: 30px;
+    font-size: 16px;
+    color: #666;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Stats Screen */
+#zetamac-stats-container {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    animation: fadeIn 0.5s ease;
+}
+
+.stat-row {
+    display: flex;
+    justify-content: space-around;
+    width: 100%;
+    margin-bottom: 40px;
+}
+
+.stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.stat-value {
+    font-size: 36px;
+    font-weight: 700;
+    color: #000;
+}
+
+.stat-label {
+    font-size: 12px;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 5px;
+}
+
+/* Graph */
+#zetamac-graph {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 8px;
+    height: 150px;
+    width: 100%;
+    margin-bottom: 40px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #eee;
+}
+
+.graph-bar {
+    background-color: #000;
+    width: 20px;
+    min-height: 2px;
+    transition: height 0.5s ease;
+    position: relative;
+    border-radius: 2px 2px 0 0;
+}
+
+.graph-bar:hover::after {
+    content: attr(data-time);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #000;
+    color: #fff;
+    padding: 4px 8px;
+    font-size: 12px;
+    border-radius: 4px;
+    margin-bottom: 5px;
+    white-space: nowrap;
+}
+
+#zetamac-exit-btn {
+    padding: 15px 40px;
+    background-color: #000000;
+    color: #ffffff;
+    border: none;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: all 0.2s ease;
+}
+
+#zetamac-exit-btn:hover {
+    background-color: #333;
+    transform: translateY(-2px);
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+`;
+
 // Check status periodically
 function checkStatus() {
     chrome.storage.local.get(['blockedSites', 'lastCompletion', 'gameSettings', 'isPaused'], (result) => {
         // If paused, ensure no overlay and return
         if (result.isPaused) {
-            const overlay = document.getElementById('zetamac-overlay');
-            if (overlay) {
-                overlay.remove();
+            const host = document.getElementById('zetamac-host');
+            if (host) {
+                host.remove();
                 document.body.style.overflow = '';
             }
             return;
         }
 
         // If overlay already exists, don't do anything
-        if (document.getElementById('zetamac-overlay')) {
+        if (document.getElementById('zetamac-host')) {
             return;
         }
 
@@ -33,15 +204,12 @@ function checkStatus() {
         const isBlocked = blockedSites.some(site => currentHost === site || currentHost.endsWith('.' + site));
 
         if (isBlocked) {
-            // console.log(`Zetamac Blocker: Current site (${currentHost}) is blocked.`);
             const lastCompletion = result.lastCompletion || 0;
             const now = Date.now();
 
             if (now - lastCompletion > cooldownMs) {
                 console.log(`Zetamac Blocker: Cooldown period has passed. Initializing game.`);
                 initGame(settings);
-            } else {
-                // console.log(`Zetamac Blocker: Cooldown period is still active.`);
             }
         }
     });
@@ -53,6 +221,16 @@ setInterval(checkStatus, 5000);
 
 function initGame(settings) {
     document.body.style.overflow = 'hidden';
+
+    // Create Host and Shadow DOM
+    const host = document.createElement('div');
+    host.id = 'zetamac-host';
+    const shadow = host.attachShadow({mode: 'open'});
+
+    // Add Styles
+    const style = document.createElement('style');
+    style.textContent = STYLES;
+    shadow.appendChild(style);
 
     // Create Overlay
     const overlay = document.createElement('div');
@@ -68,12 +246,13 @@ function initGame(settings) {
         </div>
     `;
 
-    document.body.appendChild(overlay);
+    shadow.appendChild(overlay);
+    document.body.appendChild(host);
 
-    const input = document.getElementById('zetamac-input');
-    const problemDisplay = document.getElementById('zetamac-problem');
-    const scoreDisplay = document.getElementById('zetamac-score');
-    const container = document.getElementById('zetamac-game-container');
+    const input = shadow.getElementById('zetamac-input');
+    const problemDisplay = shadow.getElementById('zetamac-problem');
+    const scoreDisplay = shadow.getElementById('zetamac-score');
+    const container = shadow.getElementById('zetamac-game-container');
     
     let score = 0;
     let currentAnswer = 0;
@@ -90,7 +269,6 @@ function initGame(settings) {
         // Helper to get random int between min and max (inclusive)
         const rand = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
 
-        // Fallback for legacy settings if needed, though we updated defaults
         const ar = settings.addRange || DEFAULT_SETTINGS.addRange;
         const mr = settings.mulRange || DEFAULT_SETTINGS.mulRange;
 
@@ -99,20 +277,16 @@ function initGame(settings) {
             b = rand(ar.min2, ar.max2);
             currentAnswer = a + b;
         } else if (op === '-') {
-            // For subtraction, we generate an addition problem and reverse it
-            // a + b = c  =>  c - a = b
             const val1 = rand(ar.min1, ar.max1);
             const val2 = rand(ar.min2, ar.max2);
             a = val1 + val2;
-            b = val1; // or val2
+            b = val1;
             currentAnswer = val2;
         } else if (op === '*') {
             a = rand(mr.min1, mr.max1);
             b = rand(mr.min2, mr.max2);
             currentAnswer = a * b;
         } else if (op === '/') {
-            // For division, generate multiplication and reverse
-            // a * b = c => c / a = b
             const val1 = rand(mr.min1, mr.max1);
             const val2 = rand(mr.min2, mr.max2);
             a = val1 * val2;
@@ -144,7 +318,8 @@ function initGame(settings) {
     });
 
     input.addEventListener('blur', () => {
-        if (document.getElementById('zetamac-input')) {
+        // Re-focus logic needs to check if element still exists in shadow
+        if (shadow.getElementById('zetamac-input')) {
             setTimeout(() => input.focus(), 10);
         }
     });
@@ -164,15 +339,11 @@ function initGame(settings) {
                 date: Date.now(),
                 score: settings.targetScore,
                 totalTime: totalTime,
-                avgTime: avgTime
+                avgTime: avgTime,
+                questionTimes: questionTimes
             };
             history.push(newRecord);
             
-            // Calculate Best Average (lower is better)
-            // Filter for games with the same target score to be fair, or just all?
-            // Usually "Best Average" implies same category, but for simplicity let's just show global best for now
-            // or maybe best for this session's target score? Let's stick to global best avg for simplicity unless requested otherwise.
-            // Actually, comparing 10 questions vs 100 questions, avg time should be comparable.
             const bestAvg = history.reduce((min, r) => Math.min(min, r.avgTime), Infinity);
             const bestAvgSeconds = (bestAvg / 1000).toFixed(1);
 
@@ -212,13 +383,13 @@ function initGame(settings) {
                 </div>
             `;
 
-            document.getElementById('zetamac-exit-btn').addEventListener('click', completeGame);
+            shadow.getElementById('zetamac-exit-btn').addEventListener('click', completeGame);
         });
     }
 
     function completeGame() {
         chrome.storage.local.set({ lastCompletion: Date.now() }, () => {
-            overlay.remove();
+            host.remove();
             document.body.style.overflow = '';
         });
     }

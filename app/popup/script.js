@@ -40,8 +40,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const mulMax2 = document.getElementById('mulMax2');
     
     const cooldownMinutes = document.getElementById('cooldownMinutes');
-    const saveSettingsBtn = document.getElementById('saveSettingsBtn');
-    const revertSettingsBtn = document.getElementById('revertSettingsBtn');
 
     let countdownInterval;
 
@@ -73,14 +71,14 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     historyBtn.addEventListener('click', () => {
-        settingsView.style.display = 'none';
+        mainView.style.display = 'none';
         historyView.style.display = 'block';
         loadHistory();
     });
 
     historyBackBtn.addEventListener('click', () => {
         historyView.style.display = 'none';
-        settingsView.style.display = 'block';
+        mainView.style.display = 'block';
     });
 
     function initPauseBtn() {
@@ -125,16 +123,30 @@ document.addEventListener('DOMContentLoaded', () => {
                 const date = new Date(game.date);
                 const dateStr = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                 const avgSeconds = (game.avgTime / 1000).toFixed(1);
+                
+                let graphHtml = '';
+                if (game.questionTimes && game.questionTimes.length > 0) {
+                    const maxTime = Math.max(...game.questionTimes);
+                    const bars = game.questionTimes.map(t => {
+                        const heightPct = (t / maxTime) * 100;
+                        return `<div class="history-bar" style="height: ${heightPct}%;" title="${(t/1000).toFixed(1)}s"></div>`;
+                    }).join('');
+                    
+                    graphHtml = `<div class="history-graph-container">${bars}</div>`;
+                }
 
                 const item = document.createElement('div');
                 item.className = 'history-item';
                 item.innerHTML = `
-                    <div>
-                        <div class="history-date">${dateStr}</div>
-                        <div class="history-score">Score: ${game.score}</div>
-                    </div>
-                    <div class="history-stats">
-                        ${avgSeconds}s / prob
+                    <div style="width: 100%;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                            <div class="history-date">${dateStr}</div>
+                            <div class="history-stats">${avgSeconds}s avg</div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                            <div class="history-score">Score: ${game.score}</div>
+                        </div>
+                        ${graphHtml}
                     </div>
                 `;
                 historyList.appendChild(item);
@@ -173,17 +185,14 @@ document.addEventListener('DOMContentLoaded', () => {
         cooldownMinutes.value = settings.cooldownMinutes || 5;
     }
 
-    saveSettingsBtn.addEventListener('click', () => {
+    function saveSettings() {
         const ops = [];
         if (opAdd.checked) ops.push('+');
         if (opSub.checked) ops.push('-');
         if (opMul.checked) ops.push('*');
         if (opDiv.checked) ops.push('/');
 
-        if (ops.length === 0) {
-            alert('Please select at least one operation.');
-            return;
-        }
+        if (ops.length === 0) return;
 
         const newSettings = {
             targetScore: parseInt(targetScoreInput.value) || 10,
@@ -204,32 +213,21 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         chrome.storage.local.set({ gameSettings: newSettings }, () => {
-            const originalText = saveSettingsBtn.textContent;
-            saveSettingsBtn.textContent = 'Saved!';
-            setTimeout(() => {
-                saveSettingsBtn.textContent = originalText;
-                settingsView.style.display = 'none';
-                mainView.style.display = 'block';
-                // Restart countdown in case cooldown changed
-                startCountdown(); 
-            }, 500);
+            startCountdown();
         });
-    });
+    }
 
-    revertSettingsBtn.addEventListener('click', () => {
-        if (confirm('Are you sure you want to revert all settings to default?')) {
-            applySettingsToUI(defaultSettings);
-            // Auto-save? Or let user click save? 
-            // Better to let user click save, but the prompt implies action.
-            // Let's just update UI for now, user must click Save to persist.
-            // Actually, "Revert" usually implies "Reset and Save".
-            // Let's save it.
-            chrome.storage.local.set({ gameSettings: defaultSettings }, () => {
-                alert('Settings reverted to defaults.');
-                settingsView.style.display = 'none';
-                mainView.style.display = 'block';
-                startCountdown();
-            });
+    const settingsInputs = [
+        targetScoreInput, cooldownMinutes,
+        opAdd, opSub, opMul, opDiv,
+        addMin1, addMax1, addMin2, addMax2,
+        mulMin1, mulMax1, mulMin2, mulMax2
+    ];
+
+    settingsInputs.forEach(input => {
+        if (input) {
+            input.addEventListener('input', saveSettings);
+            input.addEventListener('change', saveSettings);
         }
     });
 
