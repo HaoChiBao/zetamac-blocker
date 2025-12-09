@@ -9,7 +9,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         history: document.getElementById('historyView'),
         math: document.getElementById('mathSettingsView'),
         pairs: document.getElementById('pairsSettingsView'),
-        cupshuffle: document.getElementById('cupShuffleSettingsView')
+        cupshuffle: document.getElementById('cupShuffleSettingsView'),
+        blackjack: document.getElementById('blackjackSettingsView')
     };
     
     // Navigation Buttons
@@ -23,10 +24,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         mathBackBtn: document.getElementById('mathBackBtn'),
         pairsBackBtn: document.getElementById('pairsBackBtn'),
         cupShuffleBackBtn: document.getElementById('cupShuffleBackBtn'),
+        blackjackBackBtn: document.getElementById('blackjackBackBtn'),
 
         resetMathBtn: document.getElementById('resetMathBtn'),
         resetPairsBtn: document.getElementById('resetPairsBtn'),
-        resetCupShuffleBtn: document.getElementById('resetCupShuffleBtn')
+        resetCupShuffleBtn: document.getElementById('resetCupShuffleBtn'),
+        resetBlackjackBtn: document.getElementById('resetBlackjackBtn')
     };
 
     // Main Inputs
@@ -75,6 +78,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     const shuffleRounds = document.getElementById('shuffleRounds');
     const shuffleRoundsVal = document.getElementById('shuffleRoundsVal');
 
+    // Blackjack Inputs
+    const bjTargetBankroll = document.getElementById('bjTargetBankroll');
+    const bjInitialBankroll = document.getElementById('bjInitialBankroll');
+    const bjDefaultBet = document.getElementById('bjDefaultBet');
+
     // State
     const defaultSettings = {
         cooldownMinutes: 5,
@@ -88,9 +96,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             pairsToClear: 4
         },
         cupshuffle: {
-            cupsCount: 3,
             shuffleSpeed: 1.0,
             shuffleRounds: 5
+        },
+        blackjack: {
+            targetBankroll: 150,
+            initialBankroll: 100,
+            defaultBet: 10
         }
     };
     
@@ -118,6 +130,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     nav.mathBackBtn.addEventListener('click', () => showView('settings'));
     nav.pairsBackBtn.addEventListener('click', () => showView('settings'));
     nav.cupShuffleBackBtn.addEventListener('click', () => showView('settings'));
+    nav.blackjackBackBtn.addEventListener('click', () => showView('settings'));
 
 
     // --- Settings Logic ---
@@ -156,6 +169,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         cupsCount.value = cs.cupsCount || defaultSettings.cupshuffle.cupsCount;
         shuffleSpeed.value = cs.shuffleSpeed || defaultSettings.cupshuffle.shuffleSpeed;
         shuffleRounds.value = cs.shuffleRounds || defaultSettings.cupshuffle.shuffleRounds;
+        
+        // Blackjack
+        const bj = stored.blackjack || {};
+        bjTargetBankroll.value = bj.targetBankroll || defaultSettings.blackjack.targetBankroll;
+        bjInitialBankroll.value = bj.initialBankroll || defaultSettings.blackjack.initialBankroll;
+        bjDefaultBet.value = bj.defaultBet || defaultSettings.blackjack.defaultBet;
         
         // Update display labels
         updateCupLabels();
@@ -205,6 +224,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                 cupsCount: parseInt(cupsCount.value) || 3,
                 shuffleSpeed: parseFloat(shuffleSpeed.value) || 1.0,
                 shuffleRounds: parseInt(shuffleRounds.value) || 5
+            },
+
+            blackjack: {
+                targetBankroll: parseInt(bjTargetBankroll.value) || 150,
+                initialBankroll: parseInt(bjInitialBankroll.value) || 100,
+                defaultBet: parseInt(bjDefaultBet.value) || 10
             },
             
             // Preserve Enabled Games
@@ -281,6 +306,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     });
 
+    nav.resetBlackjackBtn.addEventListener('click', () => {
+        showConfirmModal('Reset Blackjack settings to default?', async () => {
+            const defaults = Storage.defaultSettings.blackjack || defaultSettings.blackjack;
+            bjTargetBankroll.value = defaults.targetBankroll;
+            bjInitialBankroll.value = defaults.initialBankroll;
+            bjDefaultBet.value = defaults.defaultBet;
+            await saveSettings();
+        });
+    });
+
     // Attach Listeners to ALL inputs
     const allInputs = [
         cooldownMinutes, targetScoreInput, 
@@ -288,7 +323,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         addMin1, addMax1, addMin2, addMax2,
         mulMin1, mulMax1, mulMin2, mulMax2,
         pairsDifficulty,
-        cupsCount, shuffleSpeed, shuffleRounds
+        cupsCount, shuffleSpeed, shuffleRounds,
+        bjTargetBankroll, bjInitialBankroll, bjDefaultBet
     ];
     
     allInputs.forEach(el => {
@@ -393,6 +429,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (config.id === 'math') showView('math');
                 else if (config.id === 'pairs') showView('pairs');
                 else if (config.id === 'cupshuffle') showView('cupshuffle');
+                else if (config.id === 'blackjack') showView('blackjack');
                 else alert('Settings not yet available for ' + config.name);
             });
 

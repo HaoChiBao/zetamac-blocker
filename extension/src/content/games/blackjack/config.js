@@ -13,8 +13,8 @@ export const config = {
         defaultBet: 10,
         dealerHitsTo: 16,
         dealerStandsOn: 17,
-        allowSplit: false,
-        allowDouble: false
+        allowSplit: true,
+        allowDouble: true
     },
     difficultyPresets: {
         easy: { targetBankroll: 140, defaultBet: 10 },

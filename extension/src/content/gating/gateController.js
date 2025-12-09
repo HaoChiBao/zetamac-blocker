@@ -64,7 +64,8 @@ export const GateController = {
         // Determine metrics
         // 1. Start with defaults or presets
         const diff = settings.difficulty || 'medium';
-        let metrics = gameEntry.config.difficultyPresets[diff] || gameEntry.config.difficultyPresets['medium'];
+        const preset = gameEntry.config.difficultyPresets[diff] || gameEntry.config.difficultyPresets['medium'];
+        let metrics = { ...gameEntry.config.completionMetrics, ...preset };
         
         console.log('[GateController] Base metrics from preset:', metrics);
         console.log('[GateController] Full Settings:', settings);

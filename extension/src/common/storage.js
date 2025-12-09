@@ -85,6 +85,10 @@ export const Storage = {
                             ...DEFAULT_SETTINGS.cupshuffle,
                             ...(storedGameSettings.cupshuffle || {})
                         },
+                        blackjack: {
+                            ...DEFAULT_SETTINGS.blackjack,
+                            ...(storedGameSettings.blackjack || {})
+                        },
                         
                         // General override
                         cooldownMinutes: storedGameSettings.cooldownMinutes || DEFAULT_SETTINGS.cooldownMinutes
