@@ -78,6 +78,43 @@ export const GateOverlay = {
             container.appendChild(switchBtn);
         }
         
+        // "I'm not feeling it" Button (Exit & Reset)
+        const exitBtn = document.createElement('button');
+        exitBtn.textContent = "I'M NOT FEELING IT";
+        exitBtn.title = "Exit and Reset Timer";
+        exitBtn.onclick = () => {
+            chrome.storage.local.set({ sessionExpiry: 0 }, () => {
+                console.log('[GateOverlay] Timer reset. Exiting.');
+                overlay.classList.add('fade-out');
+                setTimeout(() => {
+                    host.remove();
+                    document.body.style.overflow = '';
+                }, 400);
+            });
+        };
+        
+        exitBtn.style.cssText = `
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: transparent;
+            color: #000;
+            border: 2px solid #000;
+            padding: 8px 16px;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: 700;
+            font-family: 'Inter', sans-serif;
+            letter-spacing: 1px;
+            z-index: 10;
+            transition: all 0.2s;
+            text-transform: uppercase;
+        `;
+        exitBtn.onmouseenter = () => { exitBtn.style.background = '#000'; exitBtn.style.color = '#fff'; };
+        exitBtn.onmouseleave = () => { exitBtn.style.background = 'transparent'; exitBtn.style.color = '#000'; };
+        
+        container.appendChild(exitBtn);
+        
         // Branding
         
         // Branding

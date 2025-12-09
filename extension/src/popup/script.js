@@ -480,10 +480,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     function updatePauseBtn(isPaused) {
         if (isPaused) {
             pauseBtn.textContent = 'Resume Blocker';
-            pauseBtn.style.background = '#27ae60';
+            pauseBtn.style.background = '#fff';
+            pauseBtn.style.color = '#000';
+            pauseBtn.style.border = '2px solid #000';
         } else {
             pauseBtn.textContent = 'Pause Blocker';
-            pauseBtn.style.background = '#f39c12';
+            pauseBtn.style.background = '#000';
+            pauseBtn.style.color = '#fff';
+            pauseBtn.style.border = 'none';
         }
     }
 
