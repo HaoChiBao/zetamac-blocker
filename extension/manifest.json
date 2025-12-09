@@ -5,12 +5,15 @@
   "description": "Blocks websites until you solve arithmetic problems.",
   "permissions": [
     "storage",
-    "activeTab",
-    "scripting"
+    "webNavigation"
   ],
   "host_permissions": [
     "<all_urls>"
   ],
+  "background": {
+    "service_worker": "src/background.js",
+    "type": "module"
+  },
   "action": {
     "default_popup": "src/popup/index.html",
     "default_icon": {

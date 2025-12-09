@@ -12,6 +12,12 @@ export const GateController = {
         
         // Simple allowlist check
         const blocked = settings.blockedDomains.some(site => currentHost === site || currentHost.endsWith('.' + site));
+        
+        if (settings.isPaused) {
+            console.log('[GateController] Extension is paused. Allowing access.');
+            return null;
+        }
+
         const isGlobalSessionActive = await SessionManager.isSessionActive();
         console.log(`[GateController] checking host: ${currentHost}, blocked? ${blocked}, sessionActive? ${isGlobalSessionActive}`);
         

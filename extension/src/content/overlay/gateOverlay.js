@@ -1,21 +1,42 @@
 export const GateOverlay = {
     create: (onSwitch) => {
-        const host = document.createElement('div');
-        host.id = 'lowkey-smarter-host';
-        const shadow = host.attachShadow({mode: 'open'});
+        let host = document.getElementById('lowkey-smarter-host');
+        let shadow, container, overlay;
 
-        // Helper to load CSS
-        const link = document.createElement('link');
-        link.rel = 'stylesheet';
-        link.href = chrome.runtime.getURL('src/content/overlay/overlay.css');
-        shadow.appendChild(link);
+        if (host) {
+            console.log('[GateOverlay] Reusing existing overlay host');
+            shadow = host.shadowRoot;
+            overlay = shadow.getElementById('gate-overlay-root');
+            container = overlay.querySelector('.gate-container');
+            
+            // Clear previous game content but keep container
+            container.innerHTML = '';
+        } else {
+            console.log('[GateOverlay] Creating new overlay host');
+            host = document.createElement('div');
+            host.id = 'lowkey-smarter-host';
+            shadow = host.attachShadow({mode: 'open'});
 
-        const overlay = document.createElement('div');
-        overlay.id = 'gate-overlay-root';
+            // Helper to load CSS
+            const link = document.createElement('link');
+            link.rel = 'stylesheet';
+            link.href = chrome.runtime.getURL('src/content/overlay/overlay.css');
+            shadow.appendChild(link);
+
+            overlay = document.createElement('div');
+            overlay.id = 'gate-overlay-root';
+            
+            container = document.createElement('div');
+            container.className = 'gate-container';
+            
+            overlay.appendChild(container);
+            shadow.appendChild(overlay);
+            document.body.appendChild(host);
+        }
         
-        const container = document.createElement('div');
-        container.className = 'gate-container';
+        document.body.style.overflow = 'hidden';
 
+        // Re-inject core elements (Switch Btn + Brand)
         // Switch Button
         let switchBtn = null;
         if (onSwitch) {

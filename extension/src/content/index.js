@@ -67,4 +67,12 @@ import { GateOverlay } from './overlay/gateOverlay.js';
     
     // Start
     runGame();
+    
+    // Listen for SPA navigation
+    chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+        if (request.action === 'CHECK_GATE') {
+            console.log('[ContentScript] Navigation detected. Re-checking gate...');
+            runGame();
+        }
+    });
 })();

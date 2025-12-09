@@ -355,3 +355,89 @@ li {
     min-width: 1px;
     opacity: 0.8;
 }
+
+/* Custom Modal Styles */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(2px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal-box {
+    background: #ffffff;
+    padding: 20px;
+    border-radius: 8px;
+    width: 80%;
+    max-width: 250px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    text-align: center;
+    border: 1px solid #eee;
+}
+
+.modal-message {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    color: #000;
+}
+
+.modal-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+.modal-btn {
+    padding: 8px 16px;
+    border: 2px solid #000;
+    background: #fff;
+    color: #000;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.modal-btn.confirm {
+    background: #000;
+    color: #fff;
+}
+
+.modal-btn.confirm:hover {
+    background: #333;
+    border-color: #333;
+}
+
+.modal-btn.cancel:hover {
+    background: #f0f0f0;
+}
+
+/* Reset Section Button Styles */
+.reset-section {
+    margin-bottom: 20px;
+}
+
+.reset-section-btn {
+    width: 100%;
+    background: transparent;
+    border: 1px solid #ccc;
+    padding: 8px;
+    font-size: 13px;
+    color: #666;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.reset-section-btn:hover {
+    border-color: #000;
+    color: #000;
+    background: #f9f9f9;
+}

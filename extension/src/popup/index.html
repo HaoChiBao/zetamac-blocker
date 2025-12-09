@@ -96,6 +96,9 @@
         <button id="mathBackBtn" class="icon-btn">←</button>
         <h1>Math Settings</h1>
       </div>
+      <div class="reset-section">
+        <button id="resetMathBtn" class="reset-section-btn">Reset to Defaults</button>
+      </div>
       
       <div class="settings-section">
         <div class="setting-item">
@@ -163,6 +166,9 @@
         <button id="pairsBackBtn" class="icon-btn">←</button>
         <h1>Pairs Settings</h1>
       </div>
+      <div class="reset-section">
+        <button id="resetPairsBtn" class="reset-section-btn">Reset to Defaults</button>
+      </div>
       
       <div class="settings-section">
         <div class="setting-item">
@@ -182,6 +188,9 @@
       <div class="header-row">
         <button id="cupShuffleBackBtn" class="icon-btn">←</button>
         <h1>Cup Shuffle</h1>
+      </div>
+      <div class="reset-section">
+        <button id="resetCupShuffleBtn" class="reset-section-btn">Reset to Defaults</button>
       </div>
       
       <div class="settings-section">
@@ -213,6 +222,17 @@
       </div>
     </div>
     
+    <!-- Custom Modal -->
+    <div id="modalOverlay" class="modal-overlay" style="display: none;">
+        <div class="modal-box">
+            <div id="modalMessage" class="modal-message">Confirm action?</div>
+            <div class="modal-buttons">
+                <button id="modalCancelBtn" class="modal-btn cancel">Cancel</button>
+                <button id="modalConfirmBtn" class="modal-btn confirm">Confirm</button>
+            </div>
+        </div>
+    </div>
+
     <script type="module" src="script.js"></script>
   </body>
 </html>

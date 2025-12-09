@@ -50,11 +50,12 @@ export const Storage = {
             // Read game preferences from SYNC
             chrome.storage.sync.get(['settings'], (syncResult) => {
                 // Read blocklist and legacy settings from LOCAL
-                chrome.storage.local.get(['blockedSites', 'gameSettings', 'enabledGames'], (localResult) => {
+                chrome.storage.local.get(['blockedSites', 'gameSettings', 'enabledGames', 'isPaused'], (localResult) => {
                     const loadedSync = syncResult.settings || {};
                     const storedGameSettings = localResult.gameSettings || {};
                     const storedEnabledGames = localResult.enabledGames || {};
                     const blockedSites = localResult.blockedSites || [];
+                    const isPaused = localResult.isPaused || false;
                     
                     // DEEP MERGE STRATEGY
                     const settings = {
@@ -63,6 +64,7 @@ export const Storage = {
                         
                         // Local Overrides
                         blockedDomains: blockedSites.length > 0 ? blockedSites : DEFAULT_SETTINGS.blockedDomains,
+                        isPaused: isPaused,
                         
                         // Merge Enabled Games
                         enabledGames: {

@@ -22,7 +22,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         mathBackBtn: document.getElementById('mathBackBtn'),
         pairsBackBtn: document.getElementById('pairsBackBtn'),
-        cupShuffleBackBtn: document.getElementById('cupShuffleBackBtn')
+        cupShuffleBackBtn: document.getElementById('cupShuffleBackBtn'),
+
+        resetMathBtn: document.getElementById('resetMathBtn'),
+        resetPairsBtn: document.getElementById('resetPairsBtn'),
+        resetCupShuffleBtn: document.getElementById('resetCupShuffleBtn')
     };
 
     // Main Inputs
@@ -211,6 +215,71 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         startCountdown(); 
     }
+
+    // --- Modal Logic ---
+    const modal = {
+        overlay: document.getElementById('modalOverlay'),
+        message: document.getElementById('modalMessage'),
+        confirmBtn: document.getElementById('modalConfirmBtn'),
+        cancelBtn: document.getElementById('modalCancelBtn')
+    };
+
+    function showConfirmModal(msg, onConfirm) {
+        modal.message.textContent = msg;
+        modal.overlay.style.display = 'flex';
+        
+        const cleanup = () => {
+            modal.overlay.style.display = 'none';
+            modal.confirmBtn.onclick = null;
+            modal.cancelBtn.onclick = null;
+        };
+
+        modal.confirmBtn.onclick = () => {
+            cleanup();
+            onConfirm();
+        };
+
+        modal.cancelBtn.onclick = () => {
+            cleanup();
+        };
+    }
+
+    // --- Reset Logic ---
+    nav.resetMathBtn.addEventListener('click', () => {
+        showConfirmModal('Reset Math settings to default?', async () => {
+            const defaults = Storage.defaultSettings.math;
+            
+            targetScoreInput.value = defaults.targetScore;
+            opAdd.checked = defaults.ops.includes('+');
+            opSub.checked = defaults.ops.includes('-');
+            opMul.checked = defaults.ops.includes('*');
+            opDiv.checked = defaults.ops.includes('/');
+            
+            addMin1.value = defaults.addRange.min1; addMax1.value = defaults.addRange.max1;
+            addMin2.value = defaults.addRange.min2; addMax2.value = defaults.addRange.max2;
+            mulMin1.value = defaults.mulRange.min1; mulMax1.value = defaults.mulRange.max1;
+            mulMin2.value = defaults.mulRange.min2; mulMax2.value = defaults.mulRange.max2;
+            
+            await saveSettings();
+        });
+    });
+
+    nav.resetPairsBtn.addEventListener('click', () => {
+        showConfirmModal('Reset Pairs settings to default?', async () => {
+            pairsDifficulty.value = Storage.defaultSettings.pairs.pairsToClear;
+            await saveSettings();
+        });
+    });
+
+    nav.resetCupShuffleBtn.addEventListener('click', () => {
+        showConfirmModal('Reset Cup Shuffle settings to default?', async () => {
+            const defaults = Storage.defaultSettings.cupshuffle;
+            cupsCount.value = defaults.cupsCount;
+            shuffleSpeed.value = defaults.shuffleSpeed;
+            shuffleRounds.value = defaults.shuffleRounds;
+            await saveSettings();
+        });
+    });
 
     // Attach Listeners to ALL inputs
     const allInputs = [
