@@ -88,26 +88,63 @@ const STYLES = `
 }
 
 .cup-btn {
-    padding: 12px 24px;
-    background: #eee;
-    border: 1px solid #ccc;
-    border-radius: 6px;
+    padding: 12px 28px;
+    background: #fff;
+    border: 2px solid #000;
+    border-radius: 0;
     cursor: pointer;
-    font-size: 16px;
-    color: #333;
-    transition: background 0.2s;
+    font-size: 14px;
+    font-weight: 700;
+    color: #000;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: all 0.2s;
+    font-family: 'Inter', sans-serif;
 }
 
 .cup-btn:hover {
-    background: #e0e0e0;
+    background: #000;
+    color: #fff;
+    transform: translateY(-2px);
 }
 
 .cup-status {
     height: 30px;
     margin-top: 15px;
-    font-weight: 600;
-    font-size: 18px;
-    color: #444;
+    font-weight: 800;
+    font-size: 20px;
+    color: #333;
+    opacity: 0;
+    transform: scale(0.9);
+    transition: opacity 0.2s;
+}
+
+.cup-status.visible {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.cup-status.correct {
+    color: #000;
+    animation: bounceIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.cup-status.wrong {
+    color: #000;
+    animation: shakeWarn 0.4s ease-in-out;
+}
+
+@keyframes bounceIn {
+    0% { transform: scale(0.3); opacity: 0; }
+    50% { transform: scale(1.05); opacity: 1; }
+    70% { transform: scale(0.9); }
+    100% { transform: scale(1); }
+}
+
+@keyframes shakeWarn {
+    0%, 100% { transform: translateX(0); }
+    20%, 60% { transform: translateX(-5px); }
+    40%, 80% { transform: translateX(5px); }
 }
 `;
 
@@ -116,8 +153,8 @@ export class CupShuffleGame extends Game {
         super(config, metrics);
         // Metrics: { cupsCount, shuffleSpeed (multiplier), shuffleRounds }
         this.cupsCount = Math.min(Math.max(this.metrics.cupsCount || 3, 3), 6);
-        this.speedMultiplier = this.metrics.shuffleSpeed || 1.0;
-        this.rounds = this.metrics.shuffleRounds || 5;
+        this.speedMultiplier = this.metrics.shuffleSpeed || 2.0;
+        this.rounds = this.metrics.shuffleRounds || 10;
 
         // State
         this.cups = []; // Array of DOM elements
@@ -172,8 +209,10 @@ export class CupShuffleGame extends Game {
     }
 
     async startNewGame() {
+        this.gameGeneration = (this.gameGeneration || 0) + 1;
         this.isShuffling = false;
         this.isInteracting = false;
+        this.statusEl.className = 'cup-status'; // Reset classes
         this.statusEl.textContent = '';
         this.resetBtn.style.display = 'none';
 
@@ -227,13 +266,14 @@ export class CupShuffleGame extends Game {
         await this.wait(500);
 
         // 4. Shuffle!
-        this.statusEl.textContent = 'Shuffling...';
+        this.statusEl.textContent = 'SHUFFLING...';
+        this.statusEl.classList.add('visible');
         this.isShuffling = true;
         await this.performShuffle();
         
         this.isShuffling = false;
         this.isInteracting = true;
-        this.statusEl.textContent = 'Pick a cup!';
+        this.statusEl.textContent = 'PICK A CUP';
         this.resetBtn.style.display = 'block';
     }
 
@@ -243,12 +283,14 @@ export class CupShuffleGame extends Game {
         this.isInteracting = false; // Prevent double clicks
         
         const isCorrect = (cupIndex === this.ballIndex);
+        this.statusEl.className = 'cup-status visible'; // Reset animation classes
+        void this.statusEl.offsetWidth; // Trigger reflow
         
         // Reveal this cup
         this.liftCup(cupIndex).then(() => {
             if (isCorrect) {
-                this.statusEl.textContent = 'Correct!';
-                this.statusEl.style.color = 'green';
+                this.statusEl.textContent = 'CORRECT!';
+                this.statusEl.classList.add('correct');
                 
                 // Done
                 setTimeout(() => {
@@ -262,17 +304,29 @@ export class CupShuffleGame extends Game {
                     });
                 }, 1000);
             } else {
-                this.statusEl.textContent = 'Wrong! Try again.';
-                this.statusEl.style.color = 'red';
+                this.statusEl.textContent = 'NOPE! Try again.';
+                this.statusEl.classList.add('wrong');
                 
                 // Reveal the actual ball too for fairness/feedback
+                const currentGen = this.gameGeneration;
                 setTimeout(async () => {
+                    if (this.gameGeneration !== currentGen) return;
+                    
                     await this.liftCup(this.ballIndex);
+                    
+                    // Check again before wait
+                    if (this.gameGeneration !== currentGen) return;
+                    
                     // Wait then reset
                     await this.wait(1500);
+                    
+                    // Final check before restarting
+                    if (this.gameGeneration !== currentGen) return;
+                    
                     this.dropCup(cupIndex);
                     this.dropCup(this.ballIndex);
                     this.statusEl.textContent = '';
+                    this.statusEl.className = 'cup-status';
                     this.startNewGame();
                 }, 500);
             }
@@ -344,7 +398,11 @@ export class CupShuffleGame extends Game {
                 // Sin wave for arc: sin(0..PI) goes 0->1->0
                 const flow = Math.sin(p * Math.PI); 
                 const scaleDelta = 0.25 * flow; // Increased scale variance (25%)
-                const yDelta = 30 * flow; // Scaled down (30px)
+                const yDelta = 40 * flow; // More arc (40px)
+                
+                // Rotational Wobble (New Animation)
+                // Wiggle +/- 10 degrees mid-swap
+                const wiggle = Math.sin(p * Math.PI * 2) * 15; 
 
                 const scaleA = 1 + (aIsFront ? scaleDelta : -scaleDelta);
                 const transYA = aIsFront ? -yDelta : yDelta; // Front moves UP (-Y), Back moves DOWN (+Y)
@@ -353,8 +411,8 @@ export class CupShuffleGame extends Game {
                 const transYB = !aIsFront ? -yDelta : yDelta;
 
                 // Apply
-                this.setCupStyle(elA, posA, transYA, scaleA);
-                this.setCupStyle(elB, posB, transYB, scaleB);
+                this.setCupStyle(elA, posA, transYA, scaleA, wiggle);
+                this.setCupStyle(elB, posB, transYB, scaleB, -wiggle);
 
                 if (p < 1) {
                     requestAnimationFrame(animate);
@@ -388,9 +446,9 @@ export class CupShuffleGame extends Game {
         return (slotIdx + 0.5) * slotWidth;
     }
 
-    setCupStyle(el, leftPercent, translateY, scale) {
+    setCupStyle(el, leftPercent, translateY, scale, rotation = 0) {
         el.style.left = leftPercent + '%';
-        el.style.transform = `translateX(-50%) translateY(${translateY}px) scale(${scale})`;
+        el.style.transform = `translateX(-50%) translateY(${translateY}px) scale(${scale}) rotate(${rotation}deg)`;
     }
 
     // Static position update (non-animated or instant)

@@ -32,8 +32,8 @@ const DEFAULT_SETTINGS = {
     },
     cupshuffle: {
         cupsCount: 3,
-        shuffleSpeed: 1.0,
-        shuffleRounds: 5
+        shuffleSpeed: 2.0,
+        shuffleRounds: 10
     },
     blackjack: {
         targetBankroll: 150,

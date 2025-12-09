@@ -36,7 +36,36 @@ export const GateOverlay = {
         
         document.body.style.overflow = 'hidden';
 
+        // Pause all videos & Prevent future playback
+        const pauseAll = () => {
+            document.querySelectorAll('video, audio').forEach(media => {
+                try { media.pause(); } catch(e) {}
+            });
+        };
+        pauseAll();
+
+        // Capture phase listener to stop new videos from starting
+        const blockMedia = (e) => {
+            if (e.target && (e.target.tagName === 'VIDEO' || e.target.tagName === 'AUDIO')) {
+                e.preventDefault();
+                e.stopPropagation();
+                e.target.pause();
+                console.log('[GateOverlay] Blocked media playback');
+            }
+        };
+        
+        window.addEventListener('play', blockMedia, true);
+        window.addEventListener('playing', blockMedia, true);
+
         // Re-inject core elements (Switch Btn + Brand)
+        // ... (rest of function)
+
+        // Helper to remove listeners on cleanup
+        const cleanupListeners = () => {
+             window.removeEventListener('play', blockMedia, true);
+             window.removeEventListener('playing', blockMedia, true);
+        };
+
         // Switch Button
         let switchBtn = null;
         if (onSwitch) {
@@ -142,6 +171,8 @@ export const GateOverlay = {
             host,
             container,
             remove: () => {
+                cleanupListeners(); // Stop blocking media
+                
                 overlay.classList.add('fade-out');
                 setTimeout(() => {
                     host.remove();

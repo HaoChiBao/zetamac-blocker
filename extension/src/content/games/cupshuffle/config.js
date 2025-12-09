@@ -19,12 +19,12 @@ export const config = {
     defaultEnabled: true,
     completionMetrics: {
         cupsCount: 3,
-        shuffleSpeed: 1.0,
-        shuffleRounds: 5
+        shuffleSpeed: 2.0,
+        shuffleRounds: 10
     },
     difficultyPresets: {
         easy: { cupsCount: 3, shuffleSpeed: 0.8, shuffleRounds: 3 },
-        medium: { cupsCount: 3, shuffleSpeed: 1.2, shuffleRounds: 5 },
+        medium: { cupsCount: 3, shuffleSpeed: 2.0, shuffleRounds: 10 },
         hard: { cupsCount: 4, shuffleSpeed: 1.5, shuffleRounds: 7 }
     }
 };
