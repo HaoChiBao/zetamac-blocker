@@ -2,18 +2,16 @@
 export const config = {
     id: 'wordhunt',
     name: 'Word Hunt',
-    description: 'Connect letters to form valid words.',
-    category: 'Puzzle',
-    estimatedTimeSec: 60,
+    description: 'Find words by connecting letters in the circle.',
+    category: 'Word Puzzle',
+    estimatedTimeSec: 45,
     defaultEnabled: true,
     completionMetrics: {
-        lettersCount: 5,
-        requiredValidWords: 3,
-        minWordLength: 3
+        targetWords: 3
     },
     difficultyPresets: {
-        easy: { requiredValidWords: 3, minWordLength: 3 },
-        medium: { requiredValidWords: 4, minWordLength: 3 },
-        hard: { requiredValidWords: 5, minWordLength: 4 }
+        easy: { targetWords: 3 },
+        medium: { targetWords: 5 },
+        hard: { targetWords: 7 }
     }
 };

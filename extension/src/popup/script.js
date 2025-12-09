@@ -10,7 +10,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         math: document.getElementById('mathSettingsView'),
         pairs: document.getElementById('pairsSettingsView'),
         cupshuffle: document.getElementById('cupShuffleSettingsView'),
-        blackjack: document.getElementById('blackjackSettingsView')
+        blackjack: document.getElementById('blackjackSettingsView'),
+        wordhunt: document.getElementById('wordHuntSettingsView')
     };
     
     // Navigation Buttons
@@ -25,11 +26,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         pairsBackBtn: document.getElementById('pairsBackBtn'),
         cupShuffleBackBtn: document.getElementById('cupShuffleBackBtn'),
         blackjackBackBtn: document.getElementById('blackjackBackBtn'),
+        wordHuntBackBtn: document.getElementById('wordHuntBackBtn'),
 
         resetMathBtn: document.getElementById('resetMathBtn'),
         resetPairsBtn: document.getElementById('resetPairsBtn'),
         resetCupShuffleBtn: document.getElementById('resetCupShuffleBtn'),
-        resetBlackjackBtn: document.getElementById('resetBlackjackBtn')
+        resetBlackjackBtn: document.getElementById('resetBlackjackBtn'),
+        resetWordHuntBtn: document.getElementById('resetWordHuntBtn')
     };
 
     // Main Inputs
@@ -83,6 +86,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     const bjInitialBankroll = document.getElementById('bjInitialBankroll');
     const bjDefaultBet = document.getElementById('bjDefaultBet');
 
+    // Word Hunt Inputs
+    const whTargetWords = document.getElementById('whTargetWords');
+
     // State
     const defaultSettings = {
         cooldownMinutes: 5,
@@ -103,6 +109,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             targetBankroll: 150,
             initialBankroll: 100,
             defaultBet: 10
+        },
+        wordhunt: {
+            targetWords: 3
         }
     };
     
@@ -131,6 +140,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     nav.pairsBackBtn.addEventListener('click', () => showView('settings'));
     nav.cupShuffleBackBtn.addEventListener('click', () => showView('settings'));
     nav.blackjackBackBtn.addEventListener('click', () => showView('settings'));
+    nav.wordHuntBackBtn.addEventListener('click', () => showView('settings'));
 
 
     // --- Settings Logic ---
@@ -175,6 +185,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         bjTargetBankroll.value = bj.targetBankroll || defaultSettings.blackjack.targetBankroll;
         bjInitialBankroll.value = bj.initialBankroll || defaultSettings.blackjack.initialBankroll;
         bjDefaultBet.value = bj.defaultBet || defaultSettings.blackjack.defaultBet;
+
+        // Word Hunt
+        const wh = stored.wordhunt || {};
+        whTargetWords.value = wh.targetWords || defaultSettings.wordhunt.targetWords;
         
         // Update display labels
         updateCupLabels();
@@ -230,6 +244,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                 targetBankroll: parseInt(bjTargetBankroll.value) || 150,
                 initialBankroll: parseInt(bjInitialBankroll.value) || 100,
                 defaultBet: parseInt(bjDefaultBet.value) || 10
+            },
+            
+            wordhunt: {
+                targetWords: parseInt(whTargetWords.value) || 3
             },
             
             // Preserve Enabled Games
@@ -316,6 +334,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     });
 
+    nav.resetWordHuntBtn.addEventListener('click', () => {
+        showConfirmModal('Reset Word Hunt settings to default?', async () => {
+            const defaults = Storage.defaultSettings.wordhunt || defaultSettings.wordhunt;
+            whTargetWords.value = defaults.targetWords;
+            await saveSettings();
+        });
+    });
+
     // Attach Listeners to ALL inputs
     const allInputs = [
         cooldownMinutes, targetScoreInput, 
@@ -324,7 +350,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         mulMin1, mulMax1, mulMin2, mulMax2,
         pairsDifficulty,
         cupsCount, shuffleSpeed, shuffleRounds,
-        bjTargetBankroll, bjInitialBankroll, bjDefaultBet
+        bjTargetBankroll, bjInitialBankroll, bjDefaultBet,
+        whTargetWords
     ];
     
     allInputs.forEach(el => {
@@ -430,6 +457,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 else if (config.id === 'pairs') showView('pairs');
                 else if (config.id === 'cupshuffle') showView('cupshuffle');
                 else if (config.id === 'blackjack') showView('blackjack');
+                else if (config.id === 'wordhunt') showView('wordhunt');
                 else alert('Settings not yet available for ' + config.name);
             });
 

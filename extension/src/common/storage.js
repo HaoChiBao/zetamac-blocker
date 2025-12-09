@@ -34,6 +34,14 @@ const DEFAULT_SETTINGS = {
         cupsCount: 3,
         shuffleSpeed: 1.0,
         shuffleRounds: 5
+    },
+    blackjack: {
+        targetBankroll: 150,
+        initialBankroll: 100,
+        defaultBet: 10
+    },
+    wordhunt: {
+        targetWords: 3
     }
 };
 
@@ -88,6 +96,10 @@ export const Storage = {
                         blackjack: {
                             ...DEFAULT_SETTINGS.blackjack,
                             ...(storedGameSettings.blackjack || {})
+                        },
+                        wordhunt: {
+                            ...DEFAULT_SETTINGS.wordhunt,
+                            ...(storedGameSettings.wordhunt || {})
                         },
                         
                         // General override

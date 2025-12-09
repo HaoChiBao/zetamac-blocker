@@ -124,7 +124,7 @@ export const GateOverlay = {
                 // 1. Initial Delay before fading out
                 setTimeout(() => {
                     // 2. Fade Out
-                    container.style.transition = 'opacity 0.5s ease-in-out';
+                    container.style.transition = 'opacity 0.2s ease-in-out';
                     container.style.opacity = '0';
 
                     // 3. Wait for Fade Out, then Swap Content
@@ -360,8 +360,8 @@ export const GateOverlay = {
                         void container.offsetWidth;
                         container.style.opacity = '1';
 
-                    }, 500); // End Fade Out Wait
-                }, 500); // End Initial Delay
+                    }, 200); // End Fade Out Wait
+                }, 200); // End Initial Delay
             }
         };
     }
