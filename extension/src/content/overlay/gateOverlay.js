@@ -42,8 +42,8 @@ export const GateOverlay = {
         if (onSwitch) {
             switchBtn = document.createElement('button');
             switchBtn.className = 'gate-switch-btn';
-            switchBtn.title = 'Switch Game';
-            switchBtn.innerHTML = '🔀'; // Shuffle icon
+            switchBtn.title = 'Play A Different Game';
+            switchBtn.innerHTML = 'PLAY A DIFFERENT GAME';
             switchBtn.onclick = onSwitch;
             
             // Inline generic styles for the button to ensure it looks good immediately
@@ -51,13 +51,16 @@ export const GateOverlay = {
                 position: absolute;
                 top: 20px;
                 right: 20px;
-                background: rgba(0, 0, 0, 0.05);
+                background: #000;
+                color: #fff;
                 border: none;
-                border-radius: 50%;
-                width: 40px;
-                height: 40px;
+                border-radius: 0;
+                padding: 10px 20px;
                 cursor: pointer;
-                font-size: 20px;
+                font-size: 12px;
+                font-weight: 700;
+                font-family: 'Inter', sans-serif;
+                letter-spacing: 1px;
                 display: flex;
                 align-items: center;
                 justify-content: center;
@@ -66,12 +69,10 @@ export const GateOverlay = {
             `;
             // Hover effect via JS since inline pseudo-classes are hard
             switchBtn.onmouseenter = () => {
-                switchBtn.style.background = 'rgba(0, 0, 0, 0.1)';
-                switchBtn.style.transform = 'rotate(180deg)';
+                switchBtn.style.background = '#333';
             };
             switchBtn.onmouseleave = () => {
-                switchBtn.style.background = 'rgba(0, 0, 0, 0.05)';
-                switchBtn.style.transform = 'rotate(0deg)';
+                switchBtn.style.background = '#000';
             };
 
             container.appendChild(switchBtn);
@@ -112,122 +113,255 @@ export const GateOverlay = {
             },
             
             reset: () => {
+                container.style.transition = 'none';
+                container.style.opacity = '1';
                 container.innerHTML = '';
                 container.appendChild(brand);
                 if (switchBtn) container.appendChild(switchBtn);
             },
             
-            showCompletion: (stats, onExit) => {
-                container.innerHTML = ''; // Clear game
+            showCompletion: (gameName, stats, onExit, onPlayAgain) => {
+                // 1. Initial Delay before fading out
+                setTimeout(() => {
+                    // 2. Fade Out
+                    container.style.transition = 'opacity 0.5s ease-in-out';
+                    container.style.opacity = '0';
 
-                // Inject Sleek Styles
-                const style = document.createElement('style');
-                style.textContent = `
-                    .gate-stat-row {
-                        display: flex;
-                        justify-content: center;
-                        gap: 40px;
-                        width: 100%;
-                        margin: 30px 0;
-                    }
-                    .gate-stat-item {
-                        display: flex;
-                        flex-direction: column;
-                        align-items: center;
-                        width: 120px;
-                        text-align: center;
-                    }
-                    .gate-stat-value {
-                        font-family: 'Inter', sans-serif;
-                        font-size: 36px;
-                        font-weight: 700;
-                        color: #000;
-                        line-height: 1.2;
-                    }
-                    .gate-stat-label {
-                        font-family: 'Inter', sans-serif;
-                        font-size: 12px;
-                        color: #888;
-                        text-transform: uppercase;
-                        letter-spacing: 1px;
-                        margin-top: 5px;
-                        font-weight: 500;
-                    }
-                    .gate-exit-btn {
-                        background: #000;
-                        color: white;
-                        border: none;
-                        padding: 14px 32px;
-                        font-size: 16px;
-                        border-radius: 8px;
-                        cursor: pointer;
-                        font-family: 'Inter', sans-serif;
-                        font-weight: 600;
-                        transition: transform 0.2s, background 0.2s;
-                        letter-spacing: 0.5px;
-                    }
-                    .gate-exit-btn:hover {
-                        background: #333;
-                        transform: translateY(-2px);
-                    }
-                `;
-                container.appendChild(style);
-                
-                // Branding
-                const brand = document.createElement('div');
-                brand.className = 'gate-brand';
-                brand.textContent = 'Low Key Smarter';
-                brand.style.cssText = `
-                    font-family: 'Inter', sans-serif;
-                    font-size: 24px;
-                    font-weight: 800;
-                    color: #333;
-                    margin-bottom: 10px;
-                    letter-spacing: -0.02em;
-                `;
-                container.appendChild(brand);
+                    // 3. Wait for Fade Out, then Swap Content
+                    setTimeout(() => {
+                        container.innerHTML = ''; // Clear game
 
-                // Success Message
-                const title = document.createElement('div');
-                title.textContent = 'Session Unlocked';
-                title.style.cssText = `
-                    font-family: 'Inter', sans-serif;
-                    font-size: 16px;
-                    color: #27ae60;
-                    margin-bottom: 20px;
-                    font-weight: 600;
-                    background: #e8f5e9;
-                    padding: 6px 12px;
-                    border-radius: 20px;
-                `;
-                container.appendChild(title);
+                        // Inject Sleek Styles
+                        const style = document.createElement('style');
+                        style.textContent = `
+                            .gate-main-wrapper {
+                                display: flex;
+                                flex-direction: column;
+                                align-items: center;
+                                max-width: 800px;
+                                width: 90%;
+                                /* Flattened Look */
+                                background: transparent;
+                                padding: 0;
+                                box-shadow: none;
+                                text-align: left;
+                            }
+                            
+                            .gate-header-row {
+                                width: 100%;
+                                margin-bottom: 30px;
+                                border-bottom: 2px solid #000; /* Black underline */
+                                padding-bottom: 20px;
+                                text-align: center;
+                            }
 
-                // Stats
-                if (stats) {
-                    const row = document.createElement('div');
-                    row.className = 'gate-stat-row';
-                    
-                    Object.entries(stats).forEach(([key, value]) => {
-                        const item = document.createElement('div');
-                        item.className = 'gate-stat-item';
-                        
-                        const labelText = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
-                        
-                        item.innerHTML = `
-                            <div class="gate-stat-value">${value}</div>
-                            <div class="gate-stat-label">${labelText}</div>
+                            .gate-brand-completion {
+                                font-family: 'Inter', sans-serif;
+                                font-size: 28px;
+                                font-weight: 800;
+                                color: #000;
+                                letter-spacing: -0.02em;
+                                text-transform: uppercase;
+                            }
+
+                            .gate-split-body {
+                                display: flex;
+                                gap: 40px;
+                                width: 100%;
+                                align-items: stretch; /* Equal height */
+                            }
+
+                            .gate-left-col {
+                                flex: 1;
+                                display: flex;
+                                /* Sharp corners */
+                                border-radius: 0;
+                                overflow: visible;
+                                aspect-ratio: 1; /* Force Square */
+                            }
+
+                            .gate-completion-gif {
+                                width: 100%;
+                                height: 100%;
+                                object-fit: cover; /* Fills square */
+                                display: block;
+                                /* No borders or shadows */
+                                border-radius: 0;
+                                box-shadow: none;
+                            }
+
+                            .gate-right-col {
+                                flex: 1.2;
+                                display: flex;
+                                flex-direction: column;
+                                justify-content: center;
+                            }
+
+                            .gate-congrats-msg {
+                                font-family: 'Inter', sans-serif;
+                                font-size: 24px;
+                                color: #000;
+                                font-weight: 700;
+                                margin-bottom: 20px;
+                                line-height: 1.3;
+                            }
+
+                            .gate-stat-row {
+                                display: flex;
+                                flex-wrap: wrap; 
+                                gap: 30px;
+                                margin-bottom: 30px;
+                            }
+
+                            .gate-stat-item {
+                                display: flex;
+                                flex-direction: column;
+                                min-width: 80px;
+                            }
+
+                            .gate-stat-value {
+                                font-family: 'Inter', sans-serif;
+                                font-size: 32px;
+                                font-weight: 700;
+                                color: #000;
+                            }
+
+                            .gate-stat-label {
+                                font-family: 'Inter', sans-serif;
+                                font-size: 11px;
+                                color: #888;
+                                text-transform: uppercase;
+                                letter-spacing: 1px;
+                                margin-top: 5px;
+                                font-weight: 600;
+                            }
+
+                            .gate-btn-row {
+                                display: flex;
+                                gap: 15px;
+                                margin-top: auto; /* Push to bottom if space permits */
+                            }
+
+                            .gate-exit-btn {
+                                background: #000;
+                                color: white;
+                                border: none;
+                                padding: 14px 28px;
+                                font-size: 14px;
+                                border-radius: 0;
+                                cursor: pointer;
+                                font-family: 'Inter', sans-serif;
+                                font-weight: 700;
+                                transition: transform 0.2s, background 0.2s;
+                                letter-spacing: 0.5px;
+                                text-transform: uppercase;
+                            }
+                            .gate-exit-btn:hover {
+                                background: #333;
+                                transform: translateY(-2px);
+                            }
                         `;
-                        row.appendChild(item);
-                    });
-                    container.appendChild(row);
-                }
+                        container.appendChild(style);
 
-                // Exit Button
-                const btn = document.createElement('button');
-                btn.className = 'gate-exit-btn';
-                btn.textContent = 'Enter Site';
-                btn.onclick = () => onExit();
-                container.appendChild(btn);
+                        // Main Wrapper
+                        const mainWrapper = document.createElement('div');
+                        mainWrapper.className = 'gate-main-wrapper';
+
+                        // --- HEADER ROW ---
+                        const headerRow = document.createElement('div');
+                        headerRow.className = 'gate-header-row';
+                        
+                        const brand = document.createElement('div');
+                        brand.className = 'gate-brand-completion';
+                        // "Lowkey Smarter: The Name of the Game"
+                        brand.textContent = `LOWKEY SMARTER: ${gameName || 'GAME'}`;
+                        headerRow.appendChild(brand);
+                        
+                        mainWrapper.appendChild(headerRow);
+
+                        // --- SPLIT BODY ---
+                        const splitBody = document.createElement('div');
+                        splitBody.className = 'gate-split-body';
+
+                        // Left (GIF)
+                        const leftCol = document.createElement('div');
+                        leftCol.className = 'gate-left-col';
+                        
+                        const gifNum = Math.floor(Math.random() * 15) + 1;
+                        const gifStr = String(gifNum).padStart(3, '0');
+                        const gifUrl = chrome.runtime.getURL(`images/completion/completion${gifStr}.gif`);
+                        
+                        const gifImg = document.createElement('img');
+                        gifImg.className = 'gate-completion-gif';
+                        gifImg.src = gifUrl;
+                        leftCol.appendChild(gifImg);
+                        splitBody.appendChild(leftCol);
+
+                        // Right (Content)
+                        const rightCol = document.createElement('div');
+                        rightCol.className = 'gate-right-col';
+
+                        // Message
+                        const msg = document.createElement('div');
+                        msg.className = 'gate-congrats-msg';
+                        msg.textContent = 'Congrats on completing the session!';
+                        rightCol.appendChild(msg);
+
+                        // Stats
+                        if (stats) {
+                            const row = document.createElement('div');
+                            row.className = 'gate-stat-row';
+                            
+                            Object.entries(stats).forEach(([key, value]) => {
+                                const item = document.createElement('div');
+                                item.className = 'gate-stat-item';
+                                // Format CamelCase -> Title Case
+                                const labelText = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+                                
+                                item.innerHTML = `
+                                    <div class="gate-stat-value">${value}</div>
+                                    <div class="gate-stat-label">${labelText}</div>
+                                `;
+                                row.appendChild(item);
+                            });
+                            rightCol.appendChild(row);
+                        }
+
+                        // Buttons
+                        const btnContainer = document.createElement('div');
+                        btnContainer.className = 'gate-btn-row';
+
+                        const btnAgain = document.createElement('button');
+                        btnAgain.className = 'gate-exit-btn';
+                        btnAgain.textContent = 'PLAY AGAIN';
+                        btnAgain.style.background = 'white';
+                        btnAgain.style.color = 'black';
+                        btnAgain.style.border = '2px solid black';
+                        btnAgain.onclick = () => onPlayAgain && onPlayAgain();
+                        btnAgain.onmouseenter = () => { btnAgain.style.background = '#f0f0f0'; };
+                        btnAgain.onmouseleave = () => { btnAgain.style.background = 'white'; };
+
+                        const btnExit = document.createElement('button');
+                        btnExit.className = 'gate-exit-btn';
+                        btnExit.textContent = 'ENTER SITE';
+                        btnExit.onclick = () => onExit();
+                        
+                        btnContainer.appendChild(btnAgain);
+                        btnContainer.appendChild(btnExit);
+                        rightCol.appendChild(btnContainer);
+
+                        splitBody.appendChild(rightCol);
+                        mainWrapper.appendChild(splitBody);
+
+                        container.appendChild(mainWrapper);
+
+                        // 4. Fade In New Content
+                        // Force Reflow
+                        void container.offsetWidth;
+                        container.style.opacity = '1';
+
+                    }, 500); // End Fade Out Wait
+                }, 500); // End Initial Delay
             }
         };
     }

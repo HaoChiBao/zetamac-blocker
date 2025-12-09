@@ -19,6 +19,7 @@ const STYLES = `
 .bj-header {
     display: flex;
     justify-content: space-between;
+    align-items: center; /* Fix vertical alignment */
     width: 100%;
     max-width: 600px;
     margin-bottom: 20px;
@@ -30,10 +31,10 @@ const STYLES = `
     padding-bottom: 10px;
 }
 
-.bj-bankroll {
+.bj-bankroll-group {
     display: flex;
+    gap: 20px;
     align-items: center;
-    gap: 8px;
 }
 
 .bj-target {
@@ -42,104 +43,31 @@ const STYLES = `
 
 .bj-main-area {
     display: flex;
-    justify-content: center; /* Center everything together */
-    align-items: flex-end; /* Align bottom */
+    justify-content: center;
+    align-items: flex-end;
     width: 100%;
     flex: 1;
     position: relative;
-    gap: 20px; /* Bring stack closer */
 }
 
 .bj-game-center {
-    /* Removed flex: 1 to prevent pushing stack away */
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     gap: 30px;
-    min-width: 300px; /* Ensure space for cards */
+    width: 100%;
+    max-width: 800px;
 }
 
-.bj-bet-stack-area {
-    width: 60px;
-    display: flex;
-    flex-direction: column-reverse;
-    align-items: center;
-    justify-content: flex-start;
-    padding-bottom: 20px;
-    position: relative;
-    /* Removed absolute positioning or wide margins */
-}
-
-.bj-bet-label {
-    position: absolute;
-    bottom: -25px;
-    font-size: 12px;
-    font-weight: 700;
-    white-space: nowrap;
-}
-
-/* 3D CHIP STYLES - THICKER */
-.chip-3d {
-    width: 50px;
-    height: 16px; /* Increased thickness for stack spacing */
-    position: relative;
-    margin-top: -10px; /* Overlap */
-    transition: transform 0.2s;
-    cursor: pointer;
-}
-
-/* The Side/Body of the coin */
-.chip-3d::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 50px;
-    height: 20px; /* Height of the cylinder side */
-    background: inherit;
-    border-radius: 50%; /* Bottom rounded edge */
-    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-    z-index: 1;
-}
-
-/* The Top Face */
-.chip-3d::before {
-    content: attr(data-val);
-    position: absolute;
-    top: -5px; /* Shift up to create thickness */
-    left: 0;
-    width: 50px;
-    height: 25px; /* Oval shape */
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 10px;
-    font-weight: 800;
-    border: 1px solid rgba(0,0,0,0.2);
-    box-sizing: border-box;
-    z-index: 2;
-    background: inherit; /* Will be overridden by specific colors */
-}
-
-/* B/W Theme Chips */
-.chip-5 { background: #999; } /* Side color */
-.chip-5::before { background: #fff; color: #000; border-color: #000; } /* Top face */
-
-.chip-10 { background: #333; }
-.chip-10::before { background: #666; color: #fff; border-color: #000; }
-
-.chip-25 { background: #000; }
-.chip-25::before { background: #000; color: #fff; border: 1px solid #fff; }
-
-
+/* Hands Wrapper for Split */
 .bj-hands-wrapper {
     display: flex;
     justify-content: center;
     align-items: flex-end;
     gap: 20px;
     width: 100%;
+    flex-wrap: wrap; 
 }
 
 .bj-hand-container {
@@ -147,11 +75,18 @@ const STYLES = `
     flex-direction: column;
     align-items: center;
     gap: 15px;
-    transition: opacity 0.3s;
+    transition: opacity 0.3s, transform 0.3s;
+    min-width: 120px;
 }
 
 .bj-hand-container.inactive {
-    opacity: 0.5;
+    opacity: 0.4;
+    transform: scale(0.95);
+}
+
+.bj-hand-container.active {
+    opacity: 1;
+    transform: scale(1.05); /* subtle highlight */
 }
 
 .bj-hand-label {
@@ -190,7 +125,7 @@ const STYLES = `
     color: #000;
     font-weight: bold;
     position: relative;
-    animation: deal 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    animation: deal 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     user-select: none;
     box-shadow: 4px 4px 0px rgba(0,0,0,1);
 }
@@ -222,11 +157,11 @@ const STYLES = `
 /* CONTROLS */
 .bj-controls {
     display: flex;
-    flex-direction: column; /* Stack vertically */
+    flex-direction: column;
     gap: 15px;
     margin-top: 20px;
     margin-bottom: 20px;
-    align-items: center; /* Center items */
+    align-items: center;
     width: 100%;
 }
 
@@ -238,29 +173,45 @@ const STYLES = `
 }
 
 .bj-btn {
-    padding: 15px 30px;
+    padding: 15px 0; /* Vertical padding */
+    width: 120px;    /* Fixed width for Hit/Stand equality */
     background: #000;
     color: #fff;
-    border: none;
+    border: 2px solid #000; /* Explicit border for all */
     font-weight: 700;
     cursor: pointer;
     font-size: 14px;
     text-transform: uppercase;
     letter-spacing: 1px;
     transition: all 0.2s;
-    min-width: 100px;
+    text-align: center;
 }
 
 .bj-btn:hover {
     background: #333;
+    border-color: #333;
     transform: translateY(-2px);
 }
 
 .bj-btn:active { transform: translateY(0); }
 .bj-btn:disabled { opacity: 0.3; cursor: not-allowed; transform: none; }
 
-.btn-hit { background: #000; }
-.btn-stand { background: #fff; color: #000; border: 2px solid #000; }
+/* Specific Button Styles */
+.btn-hit { 
+    background: #000; 
+    color: #fff; 
+}
+.btn-stand { 
+    background: #fff; 
+    color: #000; 
+    /* Border is correctly 2px solid #000 from base class */
+}
+.btn-stand:hover {
+    background: #f0f0f0;
+    border-color: #000;
+    color: #000;
+}
+
 .btn-deal { width: 100%; max-width: 300px; }
 
 /* Chip Buttons in Controls */
@@ -290,7 +241,7 @@ const STYLES = `
 .btn-chip-select.val-10 { background: #ccc; }
 .btn-chip-select.val-25 { background: #000; color: #fff; }
 
-.btn-clear { background: transparent; color: #000; border: 1px solid #000; min-width: 80px; padding: 10px 20px; }
+.btn-clear { background: transparent; color: #000; border: 1px solid #000; min-width: 80px; padding: 10px 20px; width: auto; }
 
 .bj-message {
     position: absolute;
@@ -326,7 +277,6 @@ export class BlackjackGame extends Game {
         
         this.bankroll = 0; 
         this.currentBet = 0;
-        this.betStack = []; // Array of chip values [5, 5, 10, 25]
         this.gameState = 'betting'; 
         
         // Stats
@@ -344,7 +294,6 @@ export class BlackjackGame extends Game {
         
         this.bankroll = this.metrics.initialBankroll;
         this.currentBet = 0;
-        this.betStack = [];
 
         // Override container styles
         this.container.style.background = 'transparent';
@@ -406,7 +355,6 @@ export class BlackjackGame extends Game {
         if (this.bankroll >= amount) {
             this.bankroll -= amount;
             this.currentBet += amount;
-            this.betStack.push(amount);
             this.updateUI();
         }
     }
@@ -414,7 +362,6 @@ export class BlackjackGame extends Game {
     clearBet() {
         this.bankroll += this.currentBet;
         this.currentBet = 0;
-        this.betStack = [];
         this.updateUI();
     }
 
@@ -437,7 +384,7 @@ export class BlackjackGame extends Game {
         const pVal = this.getHandValue(this.playerHands[0].cards);
         if (pVal === 21) {
             this.playerHands[0].status = 'blackjack';
-            this.resolveGame();
+            this.nextHand(); // Automatically proceed to dealer checks
         } else {
             this.updateUI();
         }
@@ -492,10 +439,24 @@ export class BlackjackGame extends Game {
                 status: 'playing'
             };
             
+            // Standard Rule: Deal a second card to both split hands immediately
             hand.cards.push(this.deck.pop());
             newHand.cards.push(this.deck.pop());
             
+            // Insert new hand after current hand
             this.playerHands.splice(this.activeHandIndex + 1, 0, newHand);
+            
+            // Check for 21 on the current active hand after split
+            const pVal = this.getHandValue(hand.cards);
+            if (pVal === 21) {
+                // Usually split 21 is NOT blackjack (just 21), so we just auto-stand or let them stand?
+                // Most games auto-stand on 21.
+                // Let's check status.
+                // If A-A split, usually get 1 card and stand. We'll stick to standard play for now.
+                // If 21, auto-move to next hand?
+                // For simplicity, let user hit/stand, or we can auto-stand.
+                // Let's leave it manual for control, unless it's literally 21.
+            }
             
             this.updateUI();
         }
@@ -513,6 +474,8 @@ export class BlackjackGame extends Game {
     }
 
     playDealer() {
+        // If all players busted, dealer doesn't need to play (usually)
+        // But for visual completeness we can show flip, or just resolve.
         const allBusted = this.playerHands.every(h => h.status === 'bust');
         if (allBusted) {
             this.resolveGame();
@@ -520,10 +483,11 @@ export class BlackjackGame extends Game {
         }
 
         let dVal = this.getHandValue(this.dealerHand);
+        // Soft 17 rule logic could go here, defaulting to Stand on 17
         if (dVal < this.metrics.dealerStandsOn) {
             this.dealerHand.push(this.deck.pop());
             this.updateUI();
-            setTimeout(() => this.playDealer(), 800);
+            setTimeout(() => this.playDealer(), 1000);
         } else {
             this.resolveGame();
         }
@@ -540,18 +504,23 @@ export class BlackjackGame extends Game {
             let winAmount = 0;
 
             if (hand.status === 'bust') {
-                // Loss
+                // Loss, bet is gone
             } else if (hand.status === 'blackjack') {
+                // Blackjack usually pays 3:2
+                // We return bet + 1.5 * bet
                 winAmount = hand.bet + (hand.bet * 1.5);
                 anyWin = true;
             } else {
                 if (dVal > 21) {
+                    // Dealer Bust, Player Wins 1:1
                     winAmount = hand.bet * 2;
                     anyWin = true;
                 } else if (pVal > dVal) {
+                    // Player Higher, Wins 1:1
                     winAmount = hand.bet * 2;
                     anyWin = true;
                 } else if (pVal === dVal) {
+                    // Push, Return Bet
                     winAmount = hand.bet;
                 }
             }
@@ -560,13 +529,30 @@ export class BlackjackGame extends Game {
 
         this.bankroll += totalWinnings;
         
+        // Calculate total original bet
+        const totalBet = this.playerHands.reduce((sum, h) => sum + h.bet, 0);
+
         if (anyWin) this.handsWon++;
         this.handsPlayed++;
         
-        if (totalWinnings > 0) {
-             this.message = `WON $${totalWinnings}`;
+        let finalMessage = "DEALER WINS";
+        if (totalWinnings > totalBet) {
+             const netWin = totalWinnings - totalBet;
+             finalMessage = `WON $${netWin}`;
+        } else if (totalWinnings === totalBet && totalBet > 0) {
+             finalMessage = "PUSH";
+        }
+
+        if (dVal > 21) {
+             this.message = "DEALER BUSTS";
+             setTimeout(() => {
+                 if (this.gameState === 'resolution') {
+                     this.message = finalMessage;
+                     this.updateUI();
+                 }
+             }, 1000);
         } else {
-             this.message = "DEALER WINS";
+             this.message = finalMessage;
         }
 
         this.updateUI();
@@ -588,7 +574,6 @@ export class BlackjackGame extends Game {
              setTimeout(() => {
                  this.bankroll = this.metrics.bankrollFloor;
                  this.currentBet = 0;
-                 this.betStack = [];
                  this.gameState = 'betting';
                  this.dealerHand = []; // Clear dealer hand
                  this.playerHands = []; // Clear player hands
@@ -605,10 +590,11 @@ export class BlackjackGame extends Game {
         // Header
         const headerHtml = `
             <div class="bj-header">
-                <div class="bj-bankroll">
+                <div class="bj-bankroll-group">
                     <span>🏦 $${Math.floor(this.bankroll)}</span>
                     <span class="bj-target">/ $${this.metrics.targetBankroll}</span>
                 </div>
+                <div>BET: $${this.currentBet}</div>
             </div>
         `;
 
@@ -641,12 +627,17 @@ export class BlackjackGame extends Game {
                 const pVal = this.getHandValue(hand.cards);
                 const cardsHtml = hand.cards.map(c => this.renderCard(c)).join('');
                 
+                // Show Value AND Status if not playing
+                let labelText = `${pVal}`;
+                if (hand.status === 'bust') labelText += ' - BUST';
+                else if (hand.status === 'blackjack') labelText = 'BLACKJACK';
+                else if (hand.status === 'stand') labelText += ' - STAND';
+                // If dealer is playing (waiting), we still show the number (e.g. 18 - STAND)
+                
                 return `
                     <div class="bj-hand-container ${isActive ? 'active' : 'inactive'}">
                         <div class="bj-cards">${cardsHtml}</div>
-                        <div class="bj-hand-label">
-                            ${hand.status === 'playing' ? pVal : hand.status.toUpperCase()}
-                        </div>
+                        <div class="bj-hand-label">${labelText}</div>
                         <div class="bj-hand-bet">$${hand.bet}</div>
                     </div>
                 `;
@@ -654,18 +645,6 @@ export class BlackjackGame extends Game {
             
             playerAreaHtml = `<div class="bj-hands-wrapper">${handsHtml}</div>`;
         }
-
-        // Chip Stack (Right Side)
-        const chipStackHtml = this.betStack.map(val => `
-            <div class="chip-3d chip-${val}" data-val="$${val}"></div>
-        `).join('');
-        
-        const betStackArea = `
-            <div class="bj-bet-stack-area">
-                ${chipStackHtml}
-                <div class="bj-bet-label">BET: $${this.currentBet}</div>
-            </div>
-        `;
 
         // Controls
         let controlsHtml = '';
@@ -685,26 +664,27 @@ export class BlackjackGame extends Game {
             controlsHtml = `<button class="bj-btn btn-deal" id="btn-reset">NEW HAND</button>`;
         } else if (this.gameState === 'playing') {
             const activeHand = this.playerHands[this.activeHandIndex];
+            
+            // Check double conditions
+            const canDouble = this.metrics.allowDouble && 
+                              activeHand.cards.length === 2 &&
+                              this.bankroll >= activeHand.bet;
+            
+            // Check split conditions
             const canSplit = this.metrics.allowSplit && 
                              activeHand.cards.length === 2 && 
                              this.getCardValue(activeHand.cards[0]) === this.getCardValue(activeHand.cards[1]) &&
                              this.bankroll >= activeHand.bet;
-                             
-            const canDouble = this.metrics.allowDouble && 
-                              activeHand.cards.length === 2 &&
-                              this.bankroll >= activeHand.bet;
 
             controlsHtml = `
                 <div class="bj-betting-row">
                     <button class="bj-btn btn-hit" id="btn-hit">HIT</button>
                     <button class="bj-btn btn-stand" id="btn-stand">STAND</button>
                 </div>
-                ${canDouble || canSplit ? `
-                    <div class="bj-betting-row">
-                        ${canDouble ? `<button class="bj-btn" id="btn-double">DOUBLE</button>` : ''}
-                        ${canSplit ? `<button class="bj-btn" id="btn-split">SPLIT</button>` : ''}
-                    </div>
-                ` : ''}
+                <div class="bj-betting-row">
+                    <button class="bj-btn" id="btn-double" ${canDouble ? '' : 'disabled'}>DOUBLE</button>
+                    <button class="bj-btn" id="btn-split" ${canSplit ? '' : 'disabled'}>SPLIT</button>
+                </div>
             `;
         }
 
@@ -725,8 +705,6 @@ export class BlackjackGame extends Game {
 
                     ${playerAreaHtml}
                 </div>
-                
-                ${betStackArea}
             </div>
 
             <div class="bj-controls">
@@ -744,7 +722,6 @@ export class BlackjackGame extends Game {
         } else if (this.gameState === 'resolution') {
             this.bindClick('#btn-reset', () => {
                 this.currentBet = 0;
-                this.betStack = [];
                 this.gameState = 'betting';
                 this.message = null;
                 this.dealerHand = []; // Clear dealer hand

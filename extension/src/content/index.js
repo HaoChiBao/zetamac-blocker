@@ -7,7 +7,10 @@ import { GateOverlay } from './overlay/gateOverlay.js';
     let currentGame = null; 
     let currentGameId = null;
 
-    const runGame = async (excludeId = null) => {
+    const runGame = async (options = {}) => {
+        // Handle legacy string argument or new options object
+        const initOptions = typeof options === 'string' ? { excludeId: options } : options;
+        
         // Cleanup old game logic
         if (currentGame) {
              if (currentGame.destroy) currentGame.destroy();
@@ -19,9 +22,10 @@ import { GateOverlay } from './overlay/gateOverlay.js';
             ui.reset();
         }
 
-        console.log('[ContentScript] Initializing module... excludeId:', excludeId);
-        // Pass excludeId to init to get a different game
-        const controller = await GateController.init(excludeId);
+        console.log('[ContentScript] Initializing module... Options:', initOptions);
+        
+        // Pass options to init
+        const controller = await GateController.init(initOptions);
         
         if (controller) {
             currentGameId = controller.config.id;
@@ -31,7 +35,7 @@ import { GateOverlay } from './overlay/gateOverlay.js';
             if (!ui) {
                  ui = GateOverlay.create(() => {
                      console.log('[ContentScript] Switch clicked. Switching game...');
-                     runGame(currentGameId); // Pass current ID to pivot away from it
+                     runGame({ excludeId: currentGameId }); // Pass as object for clarity
                  });
             }
             
@@ -52,11 +56,19 @@ import { GateOverlay } from './overlay/gateOverlay.js';
                         currentGame = null;
                         
                         // Show completion UI
-                        ui.showCompletion(result.meta, () => {
-                            console.log('[ContentScript] User clicked exit. Removing overlay.');
-                            ui.remove();
-                            GateController.onComplete(true);
-                        });
+                        ui.showCompletion(
+                            controller.config.name,
+                            result.meta, 
+                            () => {
+                                console.log('[ContentScript] User clicked exit. Removing overlay.');
+                                ui.remove();
+                                GateController.onComplete(true);
+                            },
+                            () => {
+                                console.log('[ContentScript] User clicked Play Again. Restarting game...');
+                                runGame({ forceId: currentGameId });
+                            }
+                        );
                     }
                 }
             });

@@ -2,8 +2,8 @@
 
 export const CONSTANTS = {
     // These paths must be relative to the extension root when loaded via chrome.runtime.getURL
-    CUP_IMAGE: 'images/cup.png',
-    BALL_IMAGE: 'images/ping_pong_ball.png',
+    CUP_IMAGE: 'images/games/cupshuffle/cup.png',
+    BALL_IMAGE: 'images/games/cupshuffle/ping_pong_ball.png',
     
     // Animation defaults (base values, modified by speed setting)
     SWAP_DURATION_BASE_MS: 600,

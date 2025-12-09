@@ -40,7 +40,7 @@ const STYLES = `
 /* Container for cups to define the track width */
 .cup-track {
     position: relative;
-    width: 100%;
+    width: 500px;
     height: 100%;
 }
 
