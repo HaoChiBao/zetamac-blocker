@@ -31,9 +31,19 @@ app.use((req, res, next) => {
 app.use('/problems', problemsRouter);
 app.use('/submissions', submissionsRouter);
 
-// Health check
+// Health check & API Directory
 app.get('/', (req, res) => {
-    res.send('Lowkey Smarter Backend is running');
+    res.json({
+        service: 'Lowkey Smarter Backend',
+        status: 'running',
+        timestamp: new Date().toISOString(),
+        endpoints: [
+            { method: 'GET', path: '/', description: 'Heartbeat & API Directory' },
+            { method: 'GET', path: '/problems', description: 'List all available coding problems' },
+            { method: 'GET', path: '/problems/random', description: 'Get a random problem (optional query: ?difficulty=easy|medium|hard)' },
+            { method: 'POST', path: '/submissions', description: 'Submit code for execution. Body: { problemId, code, type: "run"|"submit" }' }
+        ]
+    });
 });
 
 app.listen(Number(PORT), '127.0.0.1', () => {
