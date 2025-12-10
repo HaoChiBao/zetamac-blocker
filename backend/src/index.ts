@@ -11,6 +11,9 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(bodyParser.json());
 
+// Silently handle favicon.ico to prevent 404s and log clutter
+app.get('/favicon.ico', (req, res) => res.status(204).end());
+
 // Logging Middleware
 app.use((req, res, next) => {
     const start = Date.now();
