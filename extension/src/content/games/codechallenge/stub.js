@@ -48,6 +48,8 @@ const STYLES = `
     letter-spacing: -1px;
     text-transform: uppercase;
     text-align: left;
+    line-height: 1.2;
+    padding: 5px 0;
 }
 
 .code-description {

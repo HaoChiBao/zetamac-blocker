@@ -198,7 +198,7 @@ if __name__ == '__main__':
             await fs.promises.writeFile(tempFile, harness);
 
             return new Promise((resolve) => {
-                const pythonProcess = spawn('python', [tempFile]);
+                const pythonProcess = spawn('python3', [tempFile]);
                 
                 let stdoutData = '';
                 let stderrData = '';
