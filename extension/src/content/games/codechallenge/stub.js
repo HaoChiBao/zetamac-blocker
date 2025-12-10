@@ -253,9 +253,15 @@ export class CodeChallengeGame extends Game {
 
         const loadingDiv = document.createElement('div');
         loadingDiv.innerHTML = '<div class="loading-spinner"></div> LOADING PROBLEM...';
-        loadingDiv.style.textAlign = 'center';
-        loadingDiv.style.marginTop = '100px';
-        loadingDiv.style.fontWeight = '700';
+        loadingDiv.style.cssText = `
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            font-weight: 700;
+            font-family: 'Inter', sans-serif;
+        `;
         container.appendChild(loadingDiv);
 
         try {
@@ -266,8 +272,73 @@ export class CodeChallengeGame extends Game {
             container.removeChild(loadingDiv);
             this.renderGameUI(container, context);
         } catch (e) {
-            loadingDiv.textContent = 'ERROR LOADING PROBLEM. CHECK BACKEND.';
             console.error(e);
+            container.innerHTML = '';
+            
+            const errorContainer = document.createElement('div');
+            errorContainer.style.cssText = `
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                height: 100%;
+                font-family: 'Inter', sans-serif;
+                text-align: center;
+            `;
+
+            const msg = document.createElement('div');
+            msg.textContent = 'ERROR LOADING PROBLEM. THE BACKEND MIGHT BE DOWN.';
+            msg.style.cssText = `
+                font-size: 18px;
+                font-weight: 700;
+                margin-bottom: 30px;
+                color: #d00000;
+            `;
+            errorContainer.appendChild(msg);
+
+            const btnRow = document.createElement('div');
+            btnRow.style.display = 'flex';
+            btnRow.style.gap = '20px';
+
+            // Play Another Game
+            const btnSwitch = document.createElement('button');
+            btnSwitch.textContent = 'PLAY ANOTHER GAME';
+            btnSwitch.style.cssText = `
+                padding: 12px 24px;
+                background: #000;
+                color: #fff;
+                border: none;
+                font-weight: 700;
+                cursor: pointer;
+                text-transform: uppercase;
+                font-family: 'Inter', sans-serif;
+            `;
+            btnSwitch.onclick = () => {
+                if (context.onSwitch) context.onSwitch();
+                else window.location.reload();
+            };
+            btnRow.appendChild(btnSwitch);
+
+            // Exit & Mark Complete
+            const btnExit = document.createElement('button');
+            btnExit.textContent = 'EXIT & MARK COMPLETE';
+            btnExit.style.cssText = `
+                padding: 12px 24px;
+                background: #fff;
+                color: #000;
+                border: 2px solid #000;
+                font-weight: 700;
+                cursor: pointer;
+                text-transform: uppercase;
+                font-family: 'Inter', sans-serif;
+            `;
+            btnExit.onclick = () => {
+                context.onComplete({ passed: true });
+            };
+            btnRow.appendChild(btnExit);
+
+            errorContainer.appendChild(btnRow);
+            container.appendChild(errorContainer);
         }
     }
 

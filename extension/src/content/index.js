@@ -48,6 +48,10 @@ import { GateOverlay } from './overlay/gateOverlay.js';
             console.log('[ContentScript] Rendering game...');
             currentGame.render(container, {
                 config: controller.config, // Pass config for reading settings
+                onSwitch: () => {
+                    console.log('[ContentScript] Game requested switch. Switching game...');
+                    runGame({ excludeId: currentGameId });
+                },
                 onComplete: (result) => {
                     console.log('[ContentScript] Game complete', result);
                     if (result.passed) {
