@@ -257,9 +257,10 @@ export class CodeChallengeGame extends Game {
         loadingDiv.innerHTML = '<div class="loading-spinner"></div> LOADING PROBLEM...';
         loadingDiv.style.cssText = `
             display: flex;
-            flex-direction: column;
+            flex-direction: row;
             justify-content: center;
             align-items: center;
+            gap: 15px;
             height: 100%;
             font-weight: 700;
             font-family: 'Inter', sans-serif;
@@ -376,6 +377,9 @@ export class CodeChallengeGame extends Game {
                 </div>
                 
                 <div class="right-panel">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <span style="font-size: 12px; font-weight: 700; color: #666; letter-spacing: 1px;">PYTHON 3</span>
+                    </div>
                     <div class="editor-container">
                         <div class="editor-wrapper">
                             <pre class="code-highlight" aria-hidden="true"></pre>
@@ -414,21 +418,81 @@ export class CodeChallengeGame extends Game {
         });
 
         // Tab and Enter support
+        // Enhanced IDE Controls
         textarea.addEventListener('keydown', (e) => {
+            e.stopPropagation(); // Prevent site shortcuts
+
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            const val = textarea.value;
+            const selected = val.substring(start, end);
+
+            // Comment Toggle (Ctrl+/ or Cmd+/)
+            if (e.key === '/' && (e.ctrlKey || e.metaKey)) {
+                e.preventDefault();
+                // Find start and end lines
+                const startLineIndex = val.lastIndexOf('\n', start - 1) + 1;
+                const endLineIndex = val.indexOf('\n', end);
+                const actualEnd = endLineIndex === -1 ? val.length : endLineIndex;
+                
+                const lines = val.substring(startLineIndex, actualEnd).split('\n');
+                const newLines = lines.map(line => {
+                    if (line.trim().startsWith('#')) {
+                        return line.replace('# ', '').replace('#', '');
+                    } else {
+                        return '# ' + line;
+                    }
+                });
+                
+                const newText = newLines.join('\n');
+                textarea.value = val.substring(0, startLineIndex) + newText + val.substring(actualEnd);
+                
+                // Restore selection (approximate)
+                textarea.selectionStart = startLineIndex;
+                textarea.selectionEnd = startLineIndex + newText.length;
+                this.updateHighlight(textarea.value, highlight);
+                return;
+            }
+
+            // Pairs map
+            const pairs = { '(': ')', '[': ']', '{': '}', '"': '"', "'": "'" };
+            
+            // Auto-close / Surround
+            if (pairs[e.key]) {
+                e.preventDefault();
+                const open = e.key;
+                const close = pairs[e.key];
+                
+                if (start !== end) {
+                    // Surround
+                    textarea.value = val.substring(0, start) + open + selected + close + val.substring(end);
+                    textarea.selectionStart = start + 1;
+                    textarea.selectionEnd = end + 1;
+                } else {
+                    // Auto-close
+                    textarea.value = val.substring(0, start) + open + close + val.substring(end);
+                    textarea.selectionStart = textarea.selectionEnd = start + 1;
+                }
+                this.updateHighlight(textarea.value, highlight);
+                return;
+            }
+
+            // Skip closing
+            const closing = { ')': true, ']': true, '}': true, '"': true, "'": true };
+            if (closing[e.key] && start === end && val[start] === e.key) {
+                e.preventDefault();
+                textarea.selectionStart = textarea.selectionEnd = start + 1;
+                return;
+            }
+
             if (e.key === 'Tab') {
                 e.preventDefault();
-                const start = textarea.selectionStart;
-                const end = textarea.selectionEnd;
-                const val = textarea.value;
                 // Insert tab character
                 textarea.value = val.substring(0, start) + '\t' + val.substring(end);
                 textarea.selectionStart = textarea.selectionEnd = start + 1;
                 this.updateHighlight(textarea.value, highlight);
             } else if (e.key === 'Enter') {
                 e.preventDefault();
-                const start = textarea.selectionStart;
-                const end = textarea.selectionEnd;
-                const val = textarea.value;
                 
                 // Find current line's indentation
                 const lineStart = val.lastIndexOf('\n', start - 1) + 1;
@@ -659,8 +723,18 @@ export class CodeChallengeGame extends Game {
                 nameSpan.innerHTML = `<span style="margin-right: 5px;">${isHidden ? '▼' : '▶'}</span> ${r.name}`;
             });
 
-            // Expected / Received (only if failed)
-            if (!r.pass && r.expected !== undefined) {
+            // Error Output
+            if (r.error) {
+                const errorDiv = document.createElement('div');
+                errorDiv.style.marginBottom = '10px';
+                errorDiv.style.color = '#d00000';
+                errorDiv.style.fontWeight = 'bold';
+                errorDiv.style.whiteSpace = 'pre-wrap';
+                errorDiv.textContent = `RUNTIME ERROR:\n${r.error}`;
+                detailsDiv.appendChild(errorDiv);
+            }
+            // Expected / Received (only if failed and no error)
+            else if (!r.pass && r.expected !== undefined) {
                 const comparison = document.createElement('div');
                 comparison.style.marginBottom = '10px';
                 comparison.innerHTML = `

@@ -10,7 +10,8 @@ const LandingPage = () => {
     { title: "Pairs", description: "Test your memory limit. 3D card flipping.", badge: "Updated" },
     { title: "Cup Shuffle", description: "Follow the ball. Don't blink.", badge: "Popular" },
     { title: "Arithmetic", description: "Rapid-fire mental math problems." },
-    { title: "Blackjack", description: "Hit or stand. Beat the dealer." }
+    { title: "Blackjack", description: "Hit or stand. Beat the dealer." },
+    { title: "Code Challenge", description: "Solve real coding problems. Python supported.", badge: "Beta" }
   ];
 
   return (
