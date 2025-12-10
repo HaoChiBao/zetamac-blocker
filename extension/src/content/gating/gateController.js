@@ -1,6 +1,6 @@
 import { Registry } from '../games/registry.js';
 import { Storage } from '../../common/storage.js';
-import { pickRandom } from '../../common/random.js';
+import { pickRandom, shuffle } from '../../common/random.js';
 import { SessionManager } from './sessionManager.js';
 
 export const GateController = {
@@ -36,23 +36,59 @@ export const GateController = {
         if (!gameId) {
             let enabledConfigs = Registry.getEnabledGames(settings.enabledGames);
             console.log('[GateController] Enabled games:', enabledConfigs.map(c => c.id));
-            
-            // If switching, try to filter out the current one
-            if (excludeId && enabledConfigs.length > 1) {
-                const filtered = enabledConfigs.filter(c => c.id !== excludeId);
-                if (filtered.length > 0) {
-                    enabledConfigs = filtered;
-                }
-            }
 
             if (enabledConfigs.length === 0) {
                 // Fallback to math
                 console.log('[GateController] No games enabled, falling back to math');
                 gameId = 'math';
             } else {
-                const picked = pickRandom(enabledConfigs);
-                gameId = picked.id;
-                console.log('[GateController] Randomly picked:', gameId);
+                // Initialize or refresh queue if needed
+                if (!GateController.gameQueue || GateController.gameQueue.length === 0) {
+                     console.log('[GateController] Refreshing game queue...');
+                     // Create a fresh list of IDs
+                     const ids = enabledConfigs.map(c => c.id);
+                     GateController.gameQueue = shuffle(ids);
+                     console.log('[GateController] New queue:', GateController.gameQueue);
+                }
+
+                // If we need to exclude a specific ID (e.g. current game)
+                if (excludeId) {
+                    // Check if the next game is the one we want to avoid
+                    // But only if we have other options
+                    if (GateController.gameQueue.length > 0 && GateController.gameQueue[0] === excludeId) {
+                         // If we have more than 1 game left, swap the first with a random other one
+                         if (GateController.gameQueue.length > 1) {
+                             const swapIdx = Math.floor(Math.random() * (GateController.gameQueue.length - 1)) + 1;
+                             [GateController.gameQueue[0], GateController.gameQueue[swapIdx]] = [GateController.gameQueue[swapIdx], GateController.gameQueue[0]];
+                             console.log('[GateController] Swapped to avoid repeat. New head:', GateController.gameQueue[0]);
+                         } else {
+                             // If it's the ONLY game left, we might have to refill immediately
+                             // But if it's the ONLY enabled game overall, we can't avoid repeating
+                             if (enabledConfigs.length > 1) {
+                                 console.log('[GateController] Only excluded game left. Refilling...');
+                                 const ids = enabledConfigs.map(c => c.id);
+                                 // Shuffle but ensure first isn't excludeId
+                                 let newQueue = shuffle(ids);
+                                 if (newQueue[0] === excludeId) {
+                                     // Move to end
+                                     newQueue.push(newQueue.shift());
+                                 }
+                                 GateController.gameQueue = newQueue;
+                             }
+                         }
+                    }
+                }
+
+                // Pop the next game
+                gameId = GateController.gameQueue.shift();
+                
+                // Safety check: if queue logic failed or empty, fallback to random
+                if (!gameId) {
+                     const picked = pickRandom(enabledConfigs);
+                     gameId = picked.id;
+                }
+                
+                console.log('[GateController] Selected from queue:', gameId, 'Remaining:', GateController.gameQueue);
             }
             SessionManager.setSessionGame(currentHost, gameId);
         }

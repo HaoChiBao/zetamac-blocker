@@ -8,13 +8,16 @@ import * as PairsGame from './pairs/stub.js';
 import * as PairsConfig from './pairs/config.js';
 import * as CupShuffleGame from './cupshuffle/stub.js';
 import * as CupShuffleConfig from './cupshuffle/config.js';
+import * as CodeChallengeGame from './codechallenge/stub.js';
+import * as CodeChallengeConfig from './codechallenge/config.js';
 
 const games = {
     [MathConfig.config.id]: { factory: MathGame.createGame, config: MathConfig.config },
     [BlackjackConfig.config.id]: { factory: BlackjackGame.createGame, config: BlackjackConfig.config },
     [WordHuntConfig.config.id]: { factory: WordHuntGame.createGame, config: WordHuntConfig.config },
     [PairsConfig.config.id]: { factory: PairsGame.createGame, config: PairsConfig.config },
-    [CupShuffleConfig.config.id]: { factory: CupShuffleGame.createGame, config: CupShuffleConfig.config }
+    [CupShuffleConfig.config.id]: { factory: CupShuffleGame.createGame, config: CupShuffleConfig.config },
+    [CodeChallengeConfig.config.id]: { factory: CodeChallengeGame.createGame, config: CodeChallengeConfig.config }
 };
 
 export const Registry = {

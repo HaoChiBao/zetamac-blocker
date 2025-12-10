@@ -186,6 +186,7 @@ export const GateOverlay = {
                 container.innerHTML = '';
                 container.appendChild(brand);
                 if (switchBtn) container.appendChild(switchBtn);
+                container.appendChild(exitBtn);
             },
             
             showCompletion: (gameName, stats, onExit, onPlayAgain) => {
