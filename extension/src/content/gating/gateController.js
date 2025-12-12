@@ -42,12 +42,20 @@ export const GateController = {
                 console.log('[GateController] No games enabled, falling back to math');
                 gameId = 'math';
             } else {
+                // Check if enabled games changed since last queue fill
+                const currentEnabledIds = enabledConfigs.map(c => c.id).sort().join(',');
+                if (GateController.queueSourceIds !== currentEnabledIds) {
+                    console.log('[GateController] Enabled games changed. Clearing queue.');
+                    GateController.gameQueue = [];
+                }
+
                 // Initialize or refresh queue if needed
                 if (!GateController.gameQueue || GateController.gameQueue.length === 0) {
                      console.log('[GateController] Refreshing game queue...');
                      // Create a fresh list of IDs
                      const ids = enabledConfigs.map(c => c.id);
                      GateController.gameQueue = shuffle(ids);
+                     GateController.queueSourceIds = currentEnabledIds;
                      console.log('[GateController] New queue:', GateController.gameQueue);
                 }
 

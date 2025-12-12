@@ -6,6 +6,9 @@ const DEFAULT_SETTINGS = {
     cooldownMinutes: 5,
     blockedDomains: [
         "twitter.com",
+        "x.com",
+        "netflix.com",
+        "disneyplus.com",
         "facebook.com",
         "instagram.com",
         "tiktok.com",
@@ -15,10 +18,11 @@ const DEFAULT_SETTINGS = {
     ],
     enabledGames: {
         'math': true,
-        'blackjack': false,
-        'wordhunt': false,
+        'blackjack': true,
+        'wordhunt': true,
         'pairs': true,
-        'cupshuffle': true
+        'cupshuffle': true,
+        'codechallenge': true
     },
     // Detailed Game Settings
     math: {

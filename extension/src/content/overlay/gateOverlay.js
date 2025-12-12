@@ -1,3 +1,5 @@
+import { SessionManager } from '../gating/sessionManager.js';
+
 export const GateOverlay = {
     create: (onSwitch) => {
         let host = document.getElementById('lowkey-smarter-host');
@@ -112,8 +114,9 @@ export const GateOverlay = {
         exitBtn.textContent = "I'M NOT FEELING IT";
         exitBtn.title = "Exit and Reset Timer";
         exitBtn.onclick = () => {
-            chrome.storage.local.set({ sessionExpiry: 0 }, () => {
-                console.log('[GateOverlay] Timer reset. Exiting.');
+            SessionManager.extendSession().then(() => {
+                console.log('[GateOverlay] Session extended. Exiting.');
+                cleanupListeners();
                 overlay.classList.add('fade-out');
                 setTimeout(() => {
                     host.remove();

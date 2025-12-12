@@ -579,6 +579,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         chrome.storage.local.set({ sessionExpiry: 0 }, () => {
             clearInterval(countdownInterval);
             countdownContainer.style.display = 'none';
+            
+            // Trigger game immediately on active tab
+            chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
+                if (tabs && tabs[0] && tabs[0].id) {
+                    chrome.tabs.sendMessage(tabs[0].id, { action: 'CHECK_GATE' });
+                }
+            });
         });
     });
 
